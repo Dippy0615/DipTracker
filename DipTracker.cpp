@@ -148,7 +148,8 @@ int main(int argc, char** argv) {
     pattern.setCell(6, 0, 0b0011100); //28 (E)
     pattern.setCell(7, 0, 0b1111111); //127 (OFF)
     pattern.setCell(8, 0, 0b0011111); //31 (G)
-    
+    pattern.setCell(12,0, 0b1111111); //127 (OFF)
+
     pattern.setCell(0, 1, 0b1100); //12 (C)
     pattern.setCell(1, 1, 0b1100); //12 (C)
     pattern.setCell(2, 1, 0b1100); //12 (C)
@@ -158,6 +159,7 @@ int main(int argc, char** argv) {
     pattern.setCell(6, 1, 0b1100); //12 (C)
     pattern.setCell(7, 1, 0b1100); //12 (C)
     pattern.setCell(8, 1, 0b10011); //19 (G)
+    pattern.setCell(12, 1, 0b1111111); //127 (OFF)
 
     SDL_ResumeAudioStreamDevice(audio_stream);
     
@@ -174,6 +176,7 @@ int main(int argc, char** argv) {
                 SDL_MaximizeWindow(window);
             }
             if (event.type == SDL_EVENT_KEY_DOWN) {
+                //Note inputting
                 int note = keyToNote(event.key.scancode);
                 if (note > -1) {
                     if (note != NOTE_BLANK && note != NOTE_CUT) note = ((editor_octave * 12) + note);
@@ -182,6 +185,13 @@ int main(int argc, char** argv) {
                     is_editor_jamming = true;
                     preview_channel = editor_channel;
                     row = editor_row;
+                }
+                else if (event.key.scancode == SDL_SCANCODE_DELETE) {
+                    if (pattern.getCell(editor_row, editor_channel) != NOTE_BLANK) {
+                        pattern.setCell(editor_row, editor_channel, NOTE_BLANK);
+                        editor_row++;
+                        if (editor_row >= pattern.row_count) editor_row = 0;
+                    }
                 }
                 else if (event.key.scancode == SDL_SCANCODE_DOWN) {
                     if (editor_mode == PatternEditorMode::EDIT) {
