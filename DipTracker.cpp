@@ -36,9 +36,11 @@ void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additional
             for (int i = 0; i < MAX_CHANNELS; i++) {
                float left = 0.0f;
                float right = 0.0f;
-           
-               channels[i].note = pattern.getCell(row, i);
-               if (channels[i].note != 127) channels[i].PlayOscillator(left, right);
+                
+               int note = pattern.getCell(row, i);
+               if (note == NOTE_BLANK && channels[i].note == NOTE_BLANK) channels[i].note = NOTE_CUT;
+               if(note!=NOTE_BLANK) channels[i].note = note;
+               if (channels[i].note != NOTE_CUT) channels[i].PlayOscillator(left, right);
            
                sampleL += left;
                sampleR += right;
@@ -48,7 +50,7 @@ void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additional
             float left = 0.0f;
             float right = 0.0f;
             channels[preview_channel].note = pattern.getCell(row, preview_channel);
-            if (channels[preview_channel].note != 127) channels[preview_channel].PlayOscillator(left, right);
+            if (channels[preview_channel].note != NOTE_CUT) channels[preview_channel].PlayOscillator(left, right);
             sampleL += left;
             sampleR += right;
         }
@@ -174,7 +176,8 @@ int main(int argc, char** argv) {
             if (event.type == SDL_EVENT_KEY_DOWN) {
                 int note = keyToNote(event.key.scancode);
                 if (note > -1) {
-                    pattern.setCell(editor_row, editor_channel, ((editor_octave * 12) + note));
+                    if (note != NOTE_BLANK && note != NOTE_CUT) note = ((editor_octave * 12) + note);
+                    pattern.setCell(editor_row, editor_channel, note);
                     preview_time = SAMPLE_RATE;
                     is_editor_jamming = true;
                     preview_channel = editor_channel;

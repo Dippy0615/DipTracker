@@ -18,7 +18,7 @@ Pattern::Pattern() {
 	int size = row_count * MAX_CHANNELS;
 	cells = new int[size];
 	for (int i = 0; i < size; i++) {
-		cells[i] = 127;
+		cells[i] = NOTE_BLANK;
 	}
 }
 

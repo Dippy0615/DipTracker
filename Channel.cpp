@@ -7,7 +7,7 @@ Channel::Channel() {
 	my_oscillator = Oscillator::Oscillator(OscillatorType::Saw);
 	volume = MAX_VOLPANEFFECT;
 	panning = DEFAULT_PANNING;
-	note = 127;
+	note = -1;
 	is_on = true;
 }
 

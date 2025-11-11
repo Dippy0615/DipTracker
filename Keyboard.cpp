@@ -1,4 +1,5 @@
 #include <SDL3/SDL.h>
+#include "Constants.h"
 #include "Keyboard.h"
 
 int keyToNote(SDL_Scancode scancode) {
@@ -23,6 +24,7 @@ int keyToNote(SDL_Scancode scancode) {
 	case 47: return 17; //F+1
 	case 46: return 18; //F#+1
 	case 48: return 19; //G+1
+	case SDL_SCANCODE_1: return NOTE_CUT;
 	}
 	return -1;
 }

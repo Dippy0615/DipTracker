@@ -31,7 +31,8 @@ void initializeChannels() {
 }
 
 const char* getNoteName(int note) {
-    if (note == 127) return "---";
+    if (note == NOTE_BLANK) return "---";
+    if (note == NOTE_CUT) return "CUT";
     int base_note = note % 12;
     int oct = note / 12;
     char base_string[6];
