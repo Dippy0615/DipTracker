@@ -49,8 +49,9 @@ void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additional
         else if (is_editor_jamming) {
             float left = 0.0f;
             float right = 0.0f;
-            channels[preview_channel].note = pattern.getCell(row, preview_channel);
-            if (channels[preview_channel].note != NOTE_CUT) channels[preview_channel].PlayOscillator(left, right);
+            channels[preview_channel].note = preview_note;
+            if (channels[preview_channel].note != NOTE_CUT && channels[preview_channel].note != NOTE_BLANK)
+                channels[preview_channel].PlayOscillator(left, right);
             sampleL += left;
             sampleR += right;
         }
@@ -179,7 +180,10 @@ int main(int argc, char** argv) {
                 //Note inputting
                 int note = keyToNote(event.key.scancode);
                 if (note > -1) {
-                    if (note != NOTE_BLANK && note != NOTE_CUT) note = ((editor_octave * 12) + note);
+                    if (note != NOTE_BLANK && note != NOTE_CUT) {
+                        note = ((editor_octave * 12) + note);
+                        preview_note = note;
+                    }
                     pattern.setCell(editor_row, editor_channel, note);
                     preview_time = SAMPLE_RATE;
                     is_editor_jamming = true;
@@ -246,7 +250,7 @@ int main(int argc, char** argv) {
             for (int r = 0; r < pattern.row_count; r++) {
                 int cell = pattern.getCell(r, ch);
                 //Note and octave
-                TTF_Text* text = TTF_CreateText(text_engine, font, getNoteName(cell & 0x7F), 6 * sizeof(char));
+                TTF_Text* text = TTF_CreateText(text_engine, font, getNoteName(cell & NOTE_MASK), 6 * sizeof(char));
                 //Highlight
                 if ((editor_mode==PatternEditorMode::PLAY && r == row)||(editor_mode==PatternEditorMode::EDIT&&r==editor_row&&editor_channel==ch&&editor_channel_column==PatternEditorChannelColumn::NOTE))
                     TTF_SetTextColor(text, 255, 0, 0, 255);
@@ -275,7 +279,7 @@ int main(int argc, char** argv) {
                 TTF_SetTextColor(text, 255, 255, 255, 255);
                 //Effect
                 char str3[4];
-                sprintf_s(str3, getEffectString(cell & 0x3FFE000));
+                sprintf_s(str3, getEffectString(cell & EFFECT_MASK));
                 //Highlight
                 if ((editor_mode == PatternEditorMode::PLAY && r == row) || (editor_mode == PatternEditorMode::EDIT && r == editor_row && editor_channel == ch && editor_channel_column == PatternEditorChannelColumn::EFFECT1))
                     TTF_SetTextColor(text, 255, 0, 0, 255);
