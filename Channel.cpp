@@ -14,7 +14,7 @@ Channel::Channel() {
 Channel::Channel(Oscillator osc) : my_oscillator(osc) {
 	volume = MAX_VOLPANEFFECT;
 	panning = DEFAULT_PANNING;
-	note = 127;
+	note = -1;
 	is_on = true;
 }
 
@@ -27,6 +27,6 @@ void Channel::PlayOscillator(float& sampleL, float& sampleR) {
 	}
 
 	my_oscillator.SetFrequency(noteToFrequency(note));
-	my_oscillator.SetVolume((float)(volume/MAX_VOLPANEFFECT));
+	//my_oscillator.SetVolume((float)(volume/MAX_VOLPANEFFECT));
 	my_oscillator.Oscillate(sampleL, sampleR);
 }

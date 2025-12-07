@@ -47,3 +47,19 @@ int keyToNote(SDL_Scancode scancode) {
 	}
 	return -1;
 }
+
+int keyToVolume(SDL_Scancode scancode) {
+	switch (scancode) {
+		case SDL_SCANCODE_0: return 0;
+		case SDL_SCANCODE_1: return 6;
+		case SDL_SCANCODE_2: return 12;
+		case SDL_SCANCODE_3: return 18;
+		case SDL_SCANCODE_4: return 24;
+		case SDL_SCANCODE_5: return 30;
+		case SDL_SCANCODE_6: return 36;
+		case SDL_SCANCODE_7: return 42;
+		case SDL_SCANCODE_8: return 48;
+		case SDL_SCANCODE_9: return 54;
+	}
+	return -1;
+}

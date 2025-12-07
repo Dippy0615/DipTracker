@@ -57,7 +57,11 @@ const char* getNoteName(int note) {
 }
 
 const char* getEffectString(int effect) {
-    if (effect == 0) return "---";
+
+    switch(effect){
+        case 0: default: return "---"; break;
+
+    }
 }
 
 void resetPlaybackVariablesFull() {

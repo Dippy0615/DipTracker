@@ -37,7 +37,12 @@ void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additional
                float left = 0.0f;
                float right = 0.0f;
                 
-               int note = pattern.getCell(row, i);
+               int note = pattern.getCellNote(row, i);
+               int volume = pattern.getCellVolume(row, i);
+               if (volume > -1) {
+                   channels[i].my_oscillator.SetVolume((float)volume / MAX_VOLUME);
+               }
+
                if (note == NOTE_BLANK && channels[i].note == NOTE_BLANK) channels[i].note = NOTE_CUT;
                if(note!=NOTE_BLANK) channels[i].note = note;
                if (channels[i].note != NOTE_CUT) channels[i].PlayOscillator(left, right);
@@ -139,7 +144,8 @@ int main(int argc, char** argv) {
     current_pattern = &pattern;
 
     //SMB1 TEST
-    pattern = Pattern::Pattern();
+    //pattern = Pattern::Pattern();
+    /*
     pattern.setCell(0, 0, 0b0011100); //28 (E)
     pattern.setCell(1, 0, 0b0011100); //28 (E)
     pattern.setCell(2, 0, 0b1111111); //127 (OFF)
@@ -161,11 +167,12 @@ int main(int argc, char** argv) {
     pattern.setCell(7, 1, 0b1100); //12 (C)
     pattern.setCell(8, 1, 0b10011); //19 (G)
     pattern.setCell(12, 1, 0b1111111); //127 (OFF)
-
+    */
     SDL_ResumeAudioStreamDevice(audio_stream);
     
     while (running) {
         SDL_Event event;
+        
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
                 running = false;
@@ -177,22 +184,29 @@ int main(int argc, char** argv) {
                 SDL_MaximizeWindow(window);
             }
             if (event.type == SDL_EVENT_KEY_DOWN) {
-                //Note inputting
-                int note = keyToNote(event.key.scancode);
-                if (note > -1) {
-                    if (note != NOTE_BLANK && note != NOTE_CUT) {
-                        note = ((editor_octave * 12) + note);
-                        preview_note = note;
+                if(editor_channel_column==PatternEditorChannelColumn::NOTE){
+                    //Note inputting
+                    int note = keyToNote(event.key.scancode);
+                    if (note > -1) {
+                        if (note != NOTE_BLANK && note != NOTE_CUT) {
+                            note = ((editor_octave * 12) + note);
+                            preview_note = note;
+                        }
+                        pattern.setCellNote(editor_row, editor_channel, note);
+                        preview_time = SAMPLE_RATE;
+                        is_editor_jamming = true;
+                        preview_channel = editor_channel;
+                        row = editor_row;
                     }
-                    pattern.setCell(editor_row, editor_channel, note);
-                    preview_time = SAMPLE_RATE;
-                    is_editor_jamming = true;
-                    preview_channel = editor_channel;
-                    row = editor_row;
                 }
-                else if (event.key.scancode == SDL_SCANCODE_DELETE) {
-                    if (pattern.getCell(editor_row, editor_channel) != NOTE_BLANK) {
-                        pattern.setCell(editor_row, editor_channel, NOTE_BLANK);
+                else if (editor_channel_column == PatternEditorChannelColumn::VOLUME) {
+                    //Volume inputting
+                    int vol = keyToVolume(event.key.scancode);
+                    if (vol > -1) pattern.setCellVolume(editor_row, editor_channel, vol);
+                }
+                if (event.key.scancode == SDL_SCANCODE_DELETE) {
+                    if (pattern.getCellNote(editor_row, editor_channel) != NOTE_BLANK) {
+                        pattern.setCellNote(editor_row, editor_channel, NOTE_BLANK);
                         editor_row++;
                         if (editor_row >= pattern.row_count) editor_row = 0;
                     }
@@ -249,6 +263,7 @@ int main(int argc, char** argv) {
         for(int ch = 0; ch < MAX_CHANNELS; ch++){
             for (int r = 0; r < pattern.row_count; r++) {
                 int cell = pattern.getCell(r, ch);
+                
                 //Note and octave
                 TTF_Text* text = TTF_CreateText(text_engine, font, getNoteName(cell & NOTE_MASK), 6 * sizeof(char));
                 //Highlight
@@ -269,7 +284,8 @@ int main(int argc, char** argv) {
                 TTF_SetTextColor(text, 255, 255, 255, 255);
                 //Volume
                 char str2[3];
-                sprintf_s(str2, "%.2d", 64);
+                int vol = pattern.getCellVolume(r, ch);
+                sprintf_s(str2, "%.2d", vol);
                 //Highlight
                 if ((editor_mode == PatternEditorMode::PLAY && r == row) || (editor_mode == PatternEditorMode::EDIT && r == editor_row && editor_channel == ch && editor_channel_column == PatternEditorChannelColumn::VOLUME))
                     TTF_SetTextColor(text, 255, 0, 0, 255);
