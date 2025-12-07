@@ -18,7 +18,7 @@ Pattern::Pattern() {
 	int size = row_count * MAX_CHANNELS;
 	cells = new int[size];
 	for (int i = 0; i < size; i++) {
-		cells[i] = (NOTE_BLANK | 0b1111110000000000000); //note = blank, volume: 63, instrument = 0
+		cells[i] = (NOTE_BLANK | 0b1111111111110000000); //note = blank, volume: 63, instrument = 0
 	}
 }
 

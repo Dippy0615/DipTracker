@@ -43,7 +43,7 @@ void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additional
                if (volume > -1) {
                    channels[i].my_oscillator.SetVolume((float)volume / MAX_VOLUME);
                }
-               if (instrument != (int)channels[i].my_oscillator.GetOscillatorType()) {
+               if (instrument!=INSTRUMENT_BLANK && instrument != (int)channels[i].my_oscillator.GetOscillatorType()) {
                    channels[i].my_oscillator.SetOscillatorType((OscillatorType)instrument);
                }
 
@@ -198,6 +198,10 @@ int main(int argc, char** argv) {
                             is_editor_jamming = true;
                             preview_channel = editor_channel;
                             preview_instrument = pattern.getCellInstrument(editor_row, editor_channel);
+                            if (preview_instrument == INSTRUMENT_BLANK) {
+                                pattern.setCellInstrument(editor_row, editor_channel, 0);
+                                preview_instrument = 0;
+                            }
                         }
                         pattern.setCellNote(editor_row, editor_channel, note);
                         
@@ -286,7 +290,9 @@ int main(int argc, char** argv) {
                 TTF_SetTextColor(text, 255, 255, 255, 255);
                 //Instrument
                 char str[3];
-                sprintf_s(str, "%.2d", pattern.getCellInstrument(r, ch));
+                int ins = pattern.getCellInstrument(r, ch);
+                if(ins<INSTRUMENT_BLANK) sprintf_s(str, "%.2d", ins);
+                    else  sprintf_s(str, "--");
                 //Highlight
                 if ((editor_mode == PatternEditorMode::PLAY && r == row) || (editor_mode == PatternEditorMode::EDIT && r == editor_row && editor_channel==ch && editor_channel_column == PatternEditorChannelColumn::INSTRUMENT))
                     TTF_SetTextColor(text, 255, 0, 0, 255);
