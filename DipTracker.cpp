@@ -40,7 +40,7 @@ void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additional
                int note = pattern.getCellNote(row, i);
                int volume = pattern.getCellVolume(row, i);
                int instrument = pattern.getCellInstrument(row, i);
-               if (volume > -1) {
+               if (volume != VOLUME_BLANK && volume > -1) {
                    channels[i].my_oscillator.SetVolume((float)volume / MAX_VOLUME);
                }
                if (instrument!=INSTRUMENT_BLANK && instrument != (int)channels[i].my_oscillator.GetOscillatorType()) {
@@ -202,6 +202,9 @@ int main(int argc, char** argv) {
                                 pattern.setCellInstrument(editor_row, editor_channel, 0);
                                 preview_instrument = 0;
                             }
+                            if (pattern.getCellVolume(editor_row, editor_channel) == VOLUME_BLANK) {
+                                pattern.setCellVolume(editor_row, editor_channel, MAX_VOLUME);
+                            }
                         }
                         pattern.setCellNote(editor_row, editor_channel, note);
                         
@@ -225,6 +228,8 @@ int main(int argc, char** argv) {
                         if (pattern.getCellNote(editor_row, editor_channel) != NOTE_BLANK) {
                             if (pattern.getCellInstrument(editor_row, editor_channel) != INSTRUMENT_BLANK)
                                 pattern.setCellInstrument(editor_row, editor_channel, INSTRUMENT_BLANK);
+                            if (pattern.getCellVolume(editor_row, editor_channel) != VOLUME_BLANK)
+                                pattern.setCellVolume(editor_row, editor_channel, VOLUME_BLANK);
                             pattern.setCellNote(editor_row, editor_channel, NOTE_BLANK);
                             editor_row++;
                             if (editor_row >= pattern.row_count) editor_row = 0;
@@ -234,6 +239,14 @@ int main(int argc, char** argv) {
                         if (pattern.getCellInstrument(editor_row, editor_channel) != INSTRUMENT_BLANK){
                             pattern.setCellInstrument(editor_row, editor_channel, INSTRUMENT_BLANK);
                             editor_row++;
+                            if (editor_row >= pattern.row_count) editor_row = 0;
+                        }
+                    }
+                    else if (editor_channel_column == PatternEditorChannelColumn::VOLUME) {
+                        if (pattern.getCellVolume(editor_row, editor_channel) != VOLUME_BLANK) {
+                            pattern.setCellVolume(editor_row, editor_channel, VOLUME_BLANK);
+                            editor_row++;
+                            if (editor_row >= pattern.row_count) editor_row = 0;
                         }
                     }
                 }
@@ -289,7 +302,6 @@ int main(int argc, char** argv) {
         for(int ch = 0; ch < MAX_CHANNELS; ch++){
             for (int r = 0; r < pattern.row_count; r++) {
                 int cell = pattern.getCell(r, ch);
-                
                 //Note and octave
                 TTF_Text* text = TTF_CreateText(text_engine, font, getNoteName(cell & NOTE_MASK), 6 * sizeof(char));
                 //Highlight
@@ -311,8 +323,10 @@ int main(int argc, char** argv) {
                 TTF_DrawRendererText(text, (ch* 80)+(24), (r * 8) - (first_row_to_render * 8));
                 TTF_SetTextColor(text, 255, 255, 255, 255);
                 //Volume
-                char str2[3];
-                sprintf_s(str2, "%.2d", pattern.getCellVolume(r, ch));
+                char str2[6];
+                int vol = pattern.getCellVolume(r, ch);
+                if (vol != VOLUME_BLANK) sprintf_s(str2, "%.2d", vol);
+                    else sprintf_s(str2, "--");
                 //Highlight
                 if ((editor_mode == PatternEditorMode::PLAY && r == row) || (editor_mode == PatternEditorMode::EDIT && r == editor_row && editor_channel == ch && editor_channel_column == PatternEditorChannelColumn::VOLUME))
                     TTF_SetTextColor(text, 255, 0, 0, 255);

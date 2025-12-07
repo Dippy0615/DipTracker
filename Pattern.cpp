@@ -3,11 +3,11 @@
 #include "Pattern.h"
 
 /*
-* XXG GGGF FFFE EEEE VVVV VVVI IIII INNN NNNN
+* XXGG GGFF FFEE EEEV VVVV VVVI IIII INNN NNNN
 * 
 * First 7 bits are for the note (0-119 for notes, 127 for note off) [N]
 * Next 6 bits are for the instrument (0-63) [I]
-* Next 6 bits are for the volume (0-63) [V]
+* Next 7 bits are for the volume (0-64, 127 for blank) [V]
 * Next 5 bits are for the effect type (0-31) [E]
 * Next 4 bits are for the first effect column [F]
 * Next 4 bits are for the second effect column [G]
@@ -18,7 +18,7 @@ Pattern::Pattern() {
 	int size = row_count * MAX_CHANNELS;
 	cells = new int[size];
 	for (int i = 0; i < size; i++) {
-		cells[i] = (NOTE_BLANK | 0b1111111111110000000); //note = blank, volume: 63, instrument = 0
+		cells[i] = (NOTE_BLANK | (INSTRUMENT_BLANK << 7) | (VOLUME_BLANK << 13)); //note = blank, volume: 63, instrument = 0
 	}
 }
 
