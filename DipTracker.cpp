@@ -221,10 +221,20 @@ int main(int argc, char** argv) {
                     if (vol > -1) pattern.setCellVolume(editor_row, editor_channel, vol);
                 }
                 if (event.key.scancode == SDL_SCANCODE_DELETE) {
-                    if (pattern.getCellNote(editor_row, editor_channel) != NOTE_BLANK) {
-                        pattern.setCellNote(editor_row, editor_channel, NOTE_BLANK);
-                        editor_row++;
-                        if (editor_row >= pattern.row_count) editor_row = 0;
+                    if(editor_channel_column==PatternEditorChannelColumn::NOTE){
+                        if (pattern.getCellNote(editor_row, editor_channel) != NOTE_BLANK) {
+                            if (pattern.getCellInstrument(editor_row, editor_channel) != INSTRUMENT_BLANK)
+                                pattern.setCellInstrument(editor_row, editor_channel, INSTRUMENT_BLANK);
+                            pattern.setCellNote(editor_row, editor_channel, NOTE_BLANK);
+                            editor_row++;
+                            if (editor_row >= pattern.row_count) editor_row = 0;
+                        }
+                    }
+                    else if (editor_channel_column == PatternEditorChannelColumn::INSTRUMENT) {
+                        if (pattern.getCellInstrument(editor_row, editor_channel) != INSTRUMENT_BLANK){
+                            pattern.setCellInstrument(editor_row, editor_channel, INSTRUMENT_BLANK);
+                            editor_row++;
+                        }
                     }
                 }
                 else if (event.key.scancode == SDL_SCANCODE_DOWN) {
