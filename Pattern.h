@@ -15,6 +15,8 @@ public:
 	int getCellNote(int row, int column);
 	void setCellVolume(int row, int column, int volume);
 	int getCellVolume(int row, int column);
+	void setCellInstrument(int row, int column, int instrument);
+	int getCellInstrument(int row, int column);
 	void freePattern();
 
 };

@@ -18,7 +18,7 @@ Pattern::Pattern() {
 	int size = row_count * MAX_CHANNELS;
 	cells = new int[size];
 	for (int i = 0; i < size; i++) {
-		cells[i] = (NOTE_BLANK | 0b1111110000000000000); //note = blank, volume: 63
+		cells[i] = (NOTE_BLANK | 0b1111110000000000000); //note = blank, volume: 63, instrument = 0
 	}
 }
 
@@ -49,4 +49,12 @@ void Pattern::setCellVolume(int row, int column, int volume) {
 }
 int Pattern::getCellVolume(int row, int column) {
 	return (cells[row * MAX_CHANNELS + column] & VOLUME_MASK) >> 13;
+}
+
+void Pattern::setCellInstrument(int row, int column, int instrument) {
+	cells[row * MAX_CHANNELS + column] &= ~(INSTRUMENT_MASK);
+	cells[row * MAX_CHANNELS + column] |= (instrument << 7);
+}
+int Pattern::getCellInstrument(int row, int column) {
+	return (cells[row * MAX_CHANNELS + column] & INSTRUMENT_MASK) >> 7;
 }

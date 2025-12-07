@@ -25,6 +25,7 @@ extern int editor_channel_column;
 extern bool is_editor_jamming;
 extern int preview_channel;
 extern int preview_note;
+extern int preview_instrument;
 void initializePatternEditor();
 void playPattern();
 void stopPlaying();

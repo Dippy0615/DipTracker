@@ -63,3 +63,14 @@ int keyToVolume(SDL_Scancode scancode) {
 	}
 	return -1;
 }
+
+int keyToInstrument(SDL_Scancode scancode) {
+	switch (scancode) {
+		case SDL_SCANCODE_0: return 0;
+		case SDL_SCANCODE_1: return 1;
+		case SDL_SCANCODE_2: return 2;
+		case SDL_SCANCODE_3: return 3;
+		case SDL_SCANCODE_4: return 4;
+	}
+	return -1;
+}

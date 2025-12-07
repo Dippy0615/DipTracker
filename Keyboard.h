@@ -3,3 +3,4 @@
 
 int keyToNote(SDL_Scancode scancode);
 int keyToVolume(SDL_Scancode scancode);
+int keyToInstrument(SDL_Scancode scancode);

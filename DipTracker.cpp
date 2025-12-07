@@ -39,8 +39,12 @@ void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additional
                 
                int note = pattern.getCellNote(row, i);
                int volume = pattern.getCellVolume(row, i);
+               int instrument = pattern.getCellInstrument(row, i);
                if (volume > -1) {
                    channels[i].my_oscillator.SetVolume((float)volume / MAX_VOLUME);
+               }
+               if (instrument != (int)channels[i].my_oscillator.GetOscillatorType()) {
+                   channels[i].my_oscillator.SetOscillatorType((OscillatorType)instrument);
                }
 
                if (note == NOTE_BLANK && channels[i].note == NOTE_BLANK) channels[i].note = NOTE_CUT;
@@ -55,8 +59,8 @@ void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additional
             float left = 0.0f;
             float right = 0.0f;
             channels[preview_channel].note = preview_note;
-            if (channels[preview_channel].note != NOTE_CUT && channels[preview_channel].note != NOTE_BLANK)
-                channels[preview_channel].PlayOscillator(left, right);
+            channels[preview_channel].my_oscillator.SetOscillatorType((OscillatorType)preview_instrument);
+            channels[preview_channel].PlayOscillator(left, right);
             sampleL += left;
             sampleR += right;
         }
@@ -140,7 +144,6 @@ int main(int argc, char** argv) {
 
     populateNoiseTable();
     initializeChannels();
-    channels[1].my_oscillator.SetType(OscillatorType::Square);
     current_pattern = &pattern;
 
     //SMB1 TEST
@@ -191,12 +194,21 @@ int main(int argc, char** argv) {
                         if (note != NOTE_BLANK && note != NOTE_CUT) {
                             note = ((editor_octave * 12) + note);
                             preview_note = note;
+                            preview_time = SAMPLE_RATE;
+                            is_editor_jamming = true;
+                            preview_channel = editor_channel;
+                            preview_instrument = pattern.getCellInstrument(editor_row, editor_channel);
                         }
                         pattern.setCellNote(editor_row, editor_channel, note);
-                        preview_time = SAMPLE_RATE;
-                        is_editor_jamming = true;
-                        preview_channel = editor_channel;
+                        
                         row = editor_row;
+                    }
+                }
+                else if (editor_channel_column == PatternEditorChannelColumn::INSTRUMENT) {
+                    //Instrument inputting
+                    int ins = keyToInstrument(event.key.scancode);
+                    if (ins > -1) {
+                        pattern.setCellInstrument(editor_row, editor_channel, ins);
                     }
                 }
                 else if (editor_channel_column == PatternEditorChannelColumn::VOLUME) {
@@ -274,7 +286,7 @@ int main(int argc, char** argv) {
                 TTF_SetTextColor(text, 255, 255, 255, 255);
                 //Instrument
                 char str[3];
-                sprintf_s(str, "%.2d", channels[ch].my_oscillator.GetOscillatorType());
+                sprintf_s(str, "%.2d", pattern.getCellInstrument(r, ch));
                 //Highlight
                 if ((editor_mode == PatternEditorMode::PLAY && r == row) || (editor_mode == PatternEditorMode::EDIT && r == editor_row && editor_channel==ch && editor_channel_column == PatternEditorChannelColumn::INSTRUMENT))
                     TTF_SetTextColor(text, 255, 0, 0, 255);
@@ -284,8 +296,7 @@ int main(int argc, char** argv) {
                 TTF_SetTextColor(text, 255, 255, 255, 255);
                 //Volume
                 char str2[3];
-                int vol = pattern.getCellVolume(r, ch);
-                sprintf_s(str2, "%.2d", vol);
+                sprintf_s(str2, "%.2d", pattern.getCellVolume(r, ch));
                 //Highlight
                 if ((editor_mode == PatternEditorMode::PLAY && r == row) || (editor_mode == PatternEditorMode::EDIT && r == editor_row && editor_channel == ch && editor_channel_column == PatternEditorChannelColumn::VOLUME))
                     TTF_SetTextColor(text, 255, 0, 0, 255);
