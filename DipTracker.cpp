@@ -309,7 +309,7 @@ int main(int argc, char** argv) {
         for(int ch = 0; ch < MAX_CHANNELS; ch++){
             for (int r = 0; r < pattern.row_count; r++) {
                 int cell = pattern.getCell(r, ch);
-                int x = (ch * 80);
+                int x = (ch * 80)+16;
                 bool same_row = editor_mode == PatternEditorMode::EDIT && r == editor_row;
 
                 //Note and octave
@@ -361,6 +361,15 @@ int main(int argc, char** argv) {
 
                 TTF_SetTextString(text, str3, 4 * sizeof(char));
                 TTF_DrawRendererText(text, x+(56), (r * 8));
+                TTF_SetTextColor(text, 255, 255, 255, 255);
+                //Row number
+                if (ch == 0) {
+                    char str4[3];
+                    sprintf_s(str4, "%.2d", r);
+                    TTF_SetTextString(text, str4, 3 * sizeof(char));
+                    TTF_DrawRendererText(text, x - 16, r * 8);
+                }
+
                 TTF_DestroyText(text);
 
                 //White divider line
