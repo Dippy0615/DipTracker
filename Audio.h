@@ -5,7 +5,7 @@
 
 extern float noise_table[NOISE_TABLE_SIZE];
 extern Channel channels[MAX_CHANNELS];
-extern int tick_counter;
+extern int sample_counter;
 extern int tick;
 extern int row;
 extern SDL_AudioStream* audio_stream;

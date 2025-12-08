@@ -27,7 +27,6 @@ void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additional
     // Here you are expected to provide `additionalAmount` bytes of audio to the stream
     float* buffer = (float*)SDL_malloc(additionalAmount);
     int samples_to_go = additionalAmount / (sizeof(float) * 2);  // 2 channels
-    
     for (int i = 0; i < samples_to_go; i++) {
         float sampleL = 0;
         float sampleR = 0;
@@ -41,7 +40,14 @@ void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additional
                int volume = pattern.getCellVolume(row, i);
                int instrument = pattern.getCellInstrument(row, i);
                if (volume != VOLUME_BLANK && volume > -1) {
-                   channels[i].my_oscillator.SetVolume((float)volume / MAX_VOLUME);
+                   //Volume smoothing
+                   float current = channels[i].my_oscillator.GetVolume();
+                   float target = (float)volume / MAX_VOLUME;
+                   float step = (target - current) * 0.009f;
+                   bool negative = signbit(step);
+                   current += step;
+                   if ((negative && current < target) || (!negative && current > target)) current = target;
+                   channels[i].my_oscillator.SetVolume(current);
                }
                if (instrument!=INSTRUMENT_BLANK && instrument != (int)channels[i].my_oscillator.GetOscillatorType()) {
                    channels[i].my_oscillator.SetOscillatorType((OscillatorType)instrument);
@@ -58,6 +64,7 @@ void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additional
         else if (is_editor_jamming) {
             float left = 0.0f;
             float right = 0.0f;
+            channels[preview_channel].my_oscillator.SetVolume(1.0f);
             channels[preview_channel].note = preview_note;
             channels[preview_channel].my_oscillator.SetOscillatorType((OscillatorType)preview_instrument);
             channels[preview_channel].PlayOscillator(left, right);
@@ -67,11 +74,11 @@ void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additional
         sampleL *= 0.5f;
         sampleR *= 0.5f;
 
-        tick_counter++;
+        sample_counter++;
 
         if(editor_mode==PatternEditorMode::PLAY){
-            if (tick_counter >= samples_per_tick) {
-                tick_counter -= samples_per_tick;
+            if (sample_counter >= samples_per_tick) {
+                sample_counter -= samples_per_tick;
                 tick++;
                 if (tick == ticks_per_row) {
                     tick = 0;
@@ -299,7 +306,6 @@ int main(int argc, char** argv) {
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
-        
         for(int ch = 0; ch < MAX_CHANNELS; ch++){
             for (int r = 0; r < pattern.row_count; r++) {
                 int cell = pattern.getCell(r, ch);

@@ -8,7 +8,7 @@
 
 float noise_table[NOISE_TABLE_SIZE];
 Channel channels[MAX_CHANNELS];
-int tick_counter = 0;
+int sample_counter = 0;
 int tick = 0;
 int row = 0;
 SDL_AudioStream* audio_stream = nullptr;
@@ -65,7 +65,7 @@ const char* getEffectString(int effect) {
 }
 
 void resetPlaybackVariablesFull() {
-    tick_counter = 0;
+    sample_counter = 0;
     tick = 0;
     row = 0;
     is_editor_jamming = false;
