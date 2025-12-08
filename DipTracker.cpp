@@ -310,10 +310,14 @@ int main(int argc, char** argv) {
             for (int r = 0; r < pattern.row_count; r++) {
                 int cell = pattern.getCell(r, ch);
                 int x = (ch * 80);
+                bool same_row = editor_mode == PatternEditorMode::EDIT && r == editor_row;
+
                 //Note and octave
                 TTF_Text* text = TTF_CreateText(text_engine, font, getNoteName(cell & NOTE_MASK), 6 * sizeof(char));
                 //Highlight
-                if ((editor_mode==PatternEditorMode::PLAY && r == row)||(editor_mode==PatternEditorMode::EDIT&&r==editor_row&&editor_channel==ch&&editor_channel_column==PatternEditorChannelColumn::NOTE))
+                if (same_row)
+                    TTF_SetTextColor(text, 150, 150, 150, 255);
+                if ((editor_mode==PatternEditorMode::PLAY && r == row)||(same_row&&editor_channel==ch&&editor_channel_column==PatternEditorChannelColumn::NOTE))
                     TTF_SetTextColor(text, 255, 0, 0, 255);
                 
                 TTF_DrawRendererText(text, x, (r * 8)-(first_row_to_render*8));
@@ -324,7 +328,9 @@ int main(int argc, char** argv) {
                 if(ins<INSTRUMENT_BLANK) sprintf_s(str, "%.2d", ins);
                     else  sprintf_s(str, "--");
                 //Highlight
-                if ((editor_mode == PatternEditorMode::PLAY && r == row) || (editor_mode == PatternEditorMode::EDIT && r == editor_row && editor_channel==ch && editor_channel_column == PatternEditorChannelColumn::INSTRUMENT))
+                if (same_row)
+                    TTF_SetTextColor(text, 150, 150, 150, 255);
+                if ((editor_mode == PatternEditorMode::PLAY && r == row) || (same_row && editor_channel==ch && editor_channel_column == PatternEditorChannelColumn::INSTRUMENT))
                     TTF_SetTextColor(text, 255, 0, 0, 255);
 
                 TTF_SetTextString(text, str, 3 * sizeof(char));
@@ -336,7 +342,9 @@ int main(int argc, char** argv) {
                 if (vol != VOLUME_BLANK) sprintf_s(str2, "%.2d", vol);
                     else sprintf_s(str2, "--");
                 //Highlight
-                if ((editor_mode == PatternEditorMode::PLAY && r == row) || (editor_mode == PatternEditorMode::EDIT && r == editor_row && editor_channel == ch && editor_channel_column == PatternEditorChannelColumn::VOLUME))
+                if (same_row)
+                    TTF_SetTextColor(text, 150, 150, 150, 255);
+                if ((editor_mode == PatternEditorMode::PLAY && r == row) || (same_row && editor_channel == ch && editor_channel_column == PatternEditorChannelColumn::VOLUME))
                     TTF_SetTextColor(text, 255, 0, 0, 255);
 
                 TTF_SetTextString(text, str2, 3 * sizeof(char));
@@ -346,7 +354,9 @@ int main(int argc, char** argv) {
                 char str3[4];
                 sprintf_s(str3, getEffectString(cell & EFFECT_MASK));
                 //Highlight
-                if ((editor_mode == PatternEditorMode::PLAY && r == row) || (editor_mode == PatternEditorMode::EDIT && r == editor_row && editor_channel == ch && editor_channel_column == PatternEditorChannelColumn::EFFECT1))
+                if (same_row)
+                    TTF_SetTextColor(text, 150, 150, 150, 255);
+                if ((editor_mode == PatternEditorMode::PLAY && r == row) || (same_row && editor_channel == ch && editor_channel_column == PatternEditorChannelColumn::EFFECT1))
                     TTF_SetTextColor(text, 255, 0, 0, 255);
 
                 TTF_SetTextString(text, str3, 4 * sizeof(char));
