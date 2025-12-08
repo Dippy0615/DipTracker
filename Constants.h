@@ -16,4 +16,4 @@ constexpr int NOTE_MASK = 0x7F;
 constexpr int INSTRUMENT_MASK = 0x1F80;
 constexpr int VOLUME_MASK = 0xFE000;
 constexpr int EFFECT_MASK = 0xFFF80000;
-constexpr int MAX_VOLUME = 63;
+constexpr int MAX_VOLUME = 64;

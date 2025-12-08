@@ -297,18 +297,20 @@ int main(int argc, char** argv) {
             }
         }
 
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
         
         for(int ch = 0; ch < MAX_CHANNELS; ch++){
             for (int r = 0; r < pattern.row_count; r++) {
                 int cell = pattern.getCell(r, ch);
+                int x = (ch * 80);
                 //Note and octave
                 TTF_Text* text = TTF_CreateText(text_engine, font, getNoteName(cell & NOTE_MASK), 6 * sizeof(char));
                 //Highlight
                 if ((editor_mode==PatternEditorMode::PLAY && r == row)||(editor_mode==PatternEditorMode::EDIT&&r==editor_row&&editor_channel==ch&&editor_channel_column==PatternEditorChannelColumn::NOTE))
                     TTF_SetTextColor(text, 255, 0, 0, 255);
                 
-                TTF_DrawRendererText(text, (ch * 80), (r * 8)-(first_row_to_render*8));
+                TTF_DrawRendererText(text, x, (r * 8)-(first_row_to_render*8));
                 TTF_SetTextColor(text, 255, 255, 255, 255);
                 //Instrument
                 char str[3];
@@ -320,7 +322,7 @@ int main(int argc, char** argv) {
                     TTF_SetTextColor(text, 255, 0, 0, 255);
 
                 TTF_SetTextString(text, str, 3 * sizeof(char));
-                TTF_DrawRendererText(text, (ch* 80)+(24), (r * 8) - (first_row_to_render * 8));
+                TTF_DrawRendererText(text, x+(24), (r * 8) - (first_row_to_render * 8));
                 TTF_SetTextColor(text, 255, 255, 255, 255);
                 //Volume
                 char str2[6];
@@ -332,7 +334,7 @@ int main(int argc, char** argv) {
                     TTF_SetTextColor(text, 255, 0, 0, 255);
 
                 TTF_SetTextString(text, str2, 3 * sizeof(char));
-                TTF_DrawRendererText(text, (ch * 80) + (40), (r * 8) - (first_row_to_render * 8));
+                TTF_DrawRendererText(text, x + (40), (r * 8) - (first_row_to_render * 8));
                 TTF_SetTextColor(text, 255, 255, 255, 255);
                 //Effect
                 char str3[4];
@@ -342,8 +344,12 @@ int main(int argc, char** argv) {
                     TTF_SetTextColor(text, 255, 0, 0, 255);
 
                 TTF_SetTextString(text, str3, 4 * sizeof(char));
-                TTF_DrawRendererText(text, (ch * 80)+(56), (r * 8));
+                TTF_DrawRendererText(text, x+(56), (r * 8));
                 TTF_DestroyText(text);
+
+                //White divider line
+                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                SDL_RenderLine(renderer, x+(78), r * 8, x+78, (r * 8) + 8);
             }
         }
         SDL_RenderPresent(renderer);
