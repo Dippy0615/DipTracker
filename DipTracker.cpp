@@ -228,7 +228,33 @@ int main(int argc, char** argv) {
                 else if (editor_channel_column == PatternEditorChannelColumn::VOLUME) {
                     //Volume inputting
                     int vol = keyToVolume(event.key.scancode);
-                    if (vol > -1) pattern.setCellVolume(editor_row, editor_channel, vol);
+                    if(vol>-1){
+                        long long cell = pattern.getCell(editor_row, editor_channel);
+                        int volume = (cell & VOLUME_MASK)>>13;
+                        if (volume == VOLUME_BLANK) volume = 0;
+                        int editing_second_digit = (cell & VOLUME_EDIT_MASK) >> 34;
+                        if (editing_second_digit==0) {
+                            if(volume>0){
+                                volume /= 10;
+                                volume *= 10;
+                            }
+                            volume += vol;
+                            if (volume > MAX_VOLUME) volume = MAX_VOLUME;
+                            cell &= ~(VOLUME_MASK);
+                            cell |= (volume << 13);
+                            cell |= (VOLUME_EDIT_MASK);
+                        }
+                        else {
+                            volume *= 10;
+                            volume %= 100;
+                            volume += vol;
+                            if (volume > MAX_VOLUME) volume = MAX_VOLUME;
+                            cell &= ~(VOLUME_MASK);
+                            cell |= (volume << 13);
+                            cell &= ~(VOLUME_EDIT_MASK);
+                        }
+                        pattern.setCell(editor_row, editor_channel, cell);
+                    }
                 }
                 if (event.key.scancode == SDL_SCANCODE_DELETE) {
                     if(editor_channel_column==PatternEditorChannelColumn::NOTE){
@@ -308,7 +334,7 @@ int main(int argc, char** argv) {
         SDL_RenderClear(renderer);
         for(int ch = 0; ch < MAX_CHANNELS; ch++){
             for (int r = 0; r < pattern.row_count; r++) {
-                int cell = pattern.getCell(r, ch);
+                long long cell = pattern.getCell(r, ch);
                 int x = (ch * 80)+16;
                 bool same_row = editor_mode == PatternEditorMode::EDIT && r == editor_row;
 
