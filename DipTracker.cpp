@@ -11,7 +11,7 @@
 #include "PatternEditor.h"
 #include "Keyboard.h"
 
-Pattern pattern;
+Pattern patterns[MAX_PATTERNS];
 float samples_per_tick = SAMPLE_RATE / 60.0f;
 int ticks_per_row = 6;
 bool running = true;
@@ -36,9 +36,9 @@ void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additional
                float left = 0.0f;
                float right = 0.0f;
                 
-               int note = pattern.getCellNote(row, i);
-               int volume = pattern.getCellVolume(row, i);
-               int instrument = pattern.getCellInstrument(row, i);
+               int note = current_pattern->getCellNote(row, i);
+               int volume = current_pattern->getCellVolume(row, i);
+               int instrument = current_pattern->getCellInstrument(row, i);
                if (volume != VOLUME_BLANK && volume > -1) {
                    //Volume smoothing
                    float current = channels[i].my_oscillator.GetVolume();
@@ -84,7 +84,7 @@ void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additional
                     tick = 0;
                     row++;
                     //if(row>pattern.row_count/2) first_row_to_render++;
-                    if (row == pattern.row_count) {
+                    if (row == current_pattern->row_count) {
                         row = 0;
                         first_row_to_render = 0;
                     }
@@ -108,7 +108,9 @@ void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additional
 void cleanUp() {
     TTF_CloseFont(font);
     TTF_DestroyRendererTextEngine(text_engine);
-    pattern.freePattern();
+    for(int i = 0; i < MAX_PATTERNS; i++)
+        patterns[i].freePattern();
+    
     SDL_DestroyAudioStream(audio_stream);
 }
 
@@ -118,7 +120,7 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    if (!SDL_CreateWindowAndRenderer("DipTracker", 800, 450, SDL_WINDOW_RESIZABLE, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("DipTracker", 800, 520, SDL_WINDOW_RESIZABLE, &window, &renderer)) {
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
@@ -151,7 +153,8 @@ int main(int argc, char** argv) {
 
     populateNoiseTable();
     initializeChannels();
-    current_pattern = &pattern;
+    patterns[0].active = true;
+    current_pattern = &patterns[0];
 
     //SMB1 TEST
     //pattern = Pattern::Pattern();
@@ -204,16 +207,16 @@ int main(int argc, char** argv) {
                             preview_time = SAMPLE_RATE;
                             is_editor_jamming = true;
                             preview_channel = editor_channel;
-                            preview_instrument = pattern.getCellInstrument(editor_row, editor_channel);
+                            preview_instrument = current_pattern->getCellInstrument(editor_row, editor_channel);
                             if (preview_instrument == INSTRUMENT_BLANK) {
-                                pattern.setCellInstrument(editor_row, editor_channel, 0);
+                                current_pattern->setCellInstrument(editor_row, editor_channel, 0);
                                 preview_instrument = 0;
                             }
-                            if (pattern.getCellVolume(editor_row, editor_channel) == VOLUME_BLANK) {
-                                pattern.setCellVolume(editor_row, editor_channel, MAX_VOLUME);
+                            if (current_pattern->getCellVolume(editor_row, editor_channel) == VOLUME_BLANK) {
+                                current_pattern->setCellVolume(editor_row, editor_channel, MAX_VOLUME);
                             }
                         }
-                        pattern.setCellNote(editor_row, editor_channel, note);
+                        current_pattern->setCellNote(editor_row, editor_channel, note);
                         
                         row = editor_row;
                     }
@@ -222,14 +225,14 @@ int main(int argc, char** argv) {
                     //Instrument inputting
                     int ins = keyToInstrument(event.key.scancode);
                     if (ins > -1) {
-                        pattern.setCellInstrument(editor_row, editor_channel, ins);
+                        current_pattern->setCellInstrument(editor_row, editor_channel, ins);
                     }
                 }
                 else if (editor_channel_column == PatternEditorChannelColumn::VOLUME) {
                     //Volume inputting
                     int vol = keyToVolume(event.key.scancode);
                     if(vol>-1){
-                        long long cell = pattern.getCell(editor_row, editor_channel);
+                        long long cell = current_pattern->getCell(editor_row, editor_channel);
                         int volume = (cell & VOLUME_MASK)>>13;
                         if (volume == VOLUME_BLANK) volume = 0;
                         int editing_second_digit = (cell & VOLUME_EDIT_MASK) >> 34;
@@ -253,46 +256,46 @@ int main(int argc, char** argv) {
                             cell |= (volume << 13);
                             cell &= ~(VOLUME_EDIT_MASK);
                         }
-                        pattern.setCell(editor_row, editor_channel, cell);
+                        current_pattern->setCell(editor_row, editor_channel, cell);
                     }
                 }
                 if (event.key.scancode == SDL_SCANCODE_DELETE) {
                     if(editor_channel_column==PatternEditorChannelColumn::NOTE){
-                        if (pattern.getCellNote(editor_row, editor_channel) != NOTE_BLANK) {
-                            if (pattern.getCellInstrument(editor_row, editor_channel) != INSTRUMENT_BLANK)
-                                pattern.setCellInstrument(editor_row, editor_channel, INSTRUMENT_BLANK);
-                            if (pattern.getCellVolume(editor_row, editor_channel) != VOLUME_BLANK)
-                                pattern.setCellVolume(editor_row, editor_channel, VOLUME_BLANK);
-                            pattern.setCellNote(editor_row, editor_channel, NOTE_BLANK);
+                        if (current_pattern->getCellNote(editor_row, editor_channel) != NOTE_BLANK) {
+                            if (current_pattern->getCellInstrument(editor_row, editor_channel) != INSTRUMENT_BLANK)
+                                current_pattern->setCellInstrument(editor_row, editor_channel, INSTRUMENT_BLANK);
+                            if (current_pattern->getCellVolume(editor_row, editor_channel) != VOLUME_BLANK)
+                                current_pattern->setCellVolume(editor_row, editor_channel, VOLUME_BLANK);
+                            current_pattern->setCellNote(editor_row, editor_channel, NOTE_BLANK);
                             editor_row++;
-                            if (editor_row >= pattern.row_count) editor_row = 0;
+                            if (editor_row >= current_pattern->row_count) editor_row = 0;
                         }
                     }
                     else if (editor_channel_column == PatternEditorChannelColumn::INSTRUMENT) {
-                        if (pattern.getCellInstrument(editor_row, editor_channel) != INSTRUMENT_BLANK){
-                            pattern.setCellInstrument(editor_row, editor_channel, INSTRUMENT_BLANK);
+                        if (current_pattern->getCellInstrument(editor_row, editor_channel) != INSTRUMENT_BLANK){
+                            current_pattern->setCellInstrument(editor_row, editor_channel, INSTRUMENT_BLANK);
                             editor_row++;
-                            if (editor_row >= pattern.row_count) editor_row = 0;
+                            if (editor_row >= current_pattern->row_count) editor_row = 0;
                         }
                     }
                     else if (editor_channel_column == PatternEditorChannelColumn::VOLUME) {
-                        if (pattern.getCellVolume(editor_row, editor_channel) != VOLUME_BLANK) {
-                            pattern.setCellVolume(editor_row, editor_channel, VOLUME_BLANK);
+                        if (current_pattern->getCellVolume(editor_row, editor_channel) != VOLUME_BLANK) {
+                            current_pattern->setCellVolume(editor_row, editor_channel, VOLUME_BLANK);
                             editor_row++;
-                            if (editor_row >= pattern.row_count) editor_row = 0;
+                            if (editor_row >= current_pattern->row_count) editor_row = 0;
                         }
                     }
                 }
                 else if (event.key.scancode == SDL_SCANCODE_DOWN) {
                     if (editor_mode == PatternEditorMode::EDIT) {
                         editor_row++;
-                        if (editor_row >= pattern.row_count) editor_row = 0;
+                        if (editor_row >= current_pattern->row_count) editor_row = 0;
                     }
                 }
                 else if (event.key.scancode == SDL_SCANCODE_UP) {
                     if (editor_mode == PatternEditorMode::EDIT){
                         editor_row--;
-                        if (editor_row < 0) editor_row = pattern.row_count-1;
+                        if (editor_row < 0) editor_row = current_pattern->row_count-1;
                     }
                 }
                 else if (event.key.scancode == SDL_SCANCODE_LEFT) {
@@ -332,9 +335,10 @@ int main(int argc, char** argv) {
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
+        //----Draw current pattern----
         for(int ch = 0; ch < MAX_CHANNELS; ch++){
-            for (int r = 0; r < pattern.row_count; r++) {
-                long long cell = pattern.getCell(r, ch);
+            for (int r = 0; r < current_pattern->row_count; r++) {
+                long long cell = current_pattern->getCell(r, ch);
                 int x = (ch * 80)+16;
                 bool same_row = editor_mode == PatternEditorMode::EDIT && r == editor_row;
 
@@ -350,7 +354,7 @@ int main(int argc, char** argv) {
                 TTF_SetTextColor(text, 255, 255, 255, 255);
                 //Instrument
                 char str[3];
-                int ins = pattern.getCellInstrument(r, ch);
+                int ins = current_pattern->getCellInstrument(r, ch);
                 if(ins<INSTRUMENT_BLANK) sprintf_s(str, "%.2d", ins);
                     else  sprintf_s(str, "--");
                 //Highlight
@@ -364,7 +368,7 @@ int main(int argc, char** argv) {
                 TTF_SetTextColor(text, 255, 255, 255, 255);
                 //Volume
                 char str2[6];
-                int vol = pattern.getCellVolume(r, ch);
+                int vol = current_pattern->getCellVolume(r, ch);
                 if (vol != VOLUME_BLANK) sprintf_s(str2, "%.2d", vol);
                     else sprintf_s(str2, "--");
                 //Highlight
@@ -402,6 +406,17 @@ int main(int argc, char** argv) {
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
                 SDL_RenderLine(renderer, x+(78), r * 8, x+78, (r * 8) + 8);
             }
+        }
+
+        //---Draw pattern list----
+        TTF_Text* text = TTF_CreateText(text_engine, font, "--", 3 * sizeof(char));
+        for (int i = 0; i < MAX_PATTERNS; i++) {
+            char str[3];
+            sprintf_s(str, "%.2d", i);
+            TTF_SetTextString(text, str, 3);
+            if(patterns[i].active) TTF_SetTextColor(text, 255, 255, 255, 255);
+            else TTF_SetTextColor(text, 128, 128, 128, 255);
+            TTF_DrawRendererText(text, 784, i*8);
         }
         SDL_RenderPresent(renderer);
     }

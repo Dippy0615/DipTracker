@@ -18,3 +18,4 @@ constexpr int VOLUME_MASK = 0xFE000;
 constexpr int EFFECT_MASK = 0xFFF80000;
 constexpr long long VOLUME_EDIT_MASK = 0x400000000;
 constexpr int MAX_VOLUME = 64;
+constexpr int MAX_PATTERNS = 99;

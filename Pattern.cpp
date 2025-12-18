@@ -21,6 +21,7 @@ Pattern::Pattern() {
 	for (int i = 0; i < size; i++) {
 		cells[i] = (NOTE_BLANK | (INSTRUMENT_BLANK << 7) | (VOLUME_BLANK << 13)); 
 	}
+	active = false;
 }
 
 void Pattern::freePattern() {

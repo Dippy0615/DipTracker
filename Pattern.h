@@ -9,6 +9,7 @@ private:
 public:
 	Pattern();
 	int row_count;
+	bool active;
 	void setCell(int row, int column, long long value);
 	long long getCell(int row, int column);
 	void setCellNote(int row, int column, int note);
