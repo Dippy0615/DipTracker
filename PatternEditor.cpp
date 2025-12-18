@@ -5,6 +5,7 @@
 
 PatternEditorMode editor_mode = PatternEditorMode::EDIT;
 Pattern* current_pattern = nullptr;
+int patterns_active = 0;
 int editor_row = 0;
 int editor_octave = 3;
 int editor_channel = 0;

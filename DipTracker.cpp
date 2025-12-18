@@ -155,6 +155,7 @@ int main(int argc, char** argv) {
     initializeChannels();
     patterns[0].active = true;
     current_pattern = &patterns[0];
+    patterns_active++;
 
     //SMB1 TEST
     //pattern = Pattern::Pattern();
@@ -195,6 +196,22 @@ int main(int argc, char** argv) {
             }
             if (event.type == SDL_EVENT_WINDOW_MAXIMIZED) {
                 SDL_MaximizeWindow(window);
+            }
+            if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
+                if (event.button.button == 1) {
+                    if (event.button.x >= 760 && event.button.x <= 768 && event.button.y>=0&&event.button.y<=8) {
+                        //Add a pattern
+                        patterns[patterns_active].active = true;
+                        patterns_active++;
+                    }
+                    if (event.button.x >= 768 && event.button.x <= 774 && event.button.y >= 0 && event.button.y <= 8) {
+                        //Remove a pattern
+                        if(patterns_active>1){
+                            patterns[patterns_active-1].active = false;
+                            patterns_active--;
+                        }
+                    }
+                }
             }
             if (event.type == SDL_EVENT_KEY_DOWN) {
                 if(editor_channel_column==PatternEditorChannelColumn::NOTE){
@@ -418,6 +435,14 @@ int main(int argc, char** argv) {
             else TTF_SetTextColor(text, 128, 128, 128, 255);
             TTF_DrawRendererText(text, 784, i*8);
         }
+
+        //Add and remove a pattern (+ and -)
+        TTF_SetTextColor(text, 255, 255, 255, 255);
+        TTF_SetTextString(text, "+", 2);
+        TTF_DrawRendererText(text, 760, 0);
+        TTF_SetTextString(text, "-", 2);
+        TTF_DrawRendererText(text, 768, 0);
+
         SDL_RenderPresent(renderer);
     }
     cleanUp();

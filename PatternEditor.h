@@ -18,6 +18,7 @@ enum PatternEditorChannelColumn {
 
 extern PatternEditorMode editor_mode;
 extern Pattern* current_pattern;
+extern int patterns_active;
 extern int editor_row;
 extern int editor_octave;
 extern int editor_channel;
