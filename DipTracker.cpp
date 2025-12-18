@@ -87,6 +87,10 @@ void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additional
                     if (row == current_pattern->row_count) {
                         row = 0;
                         first_row_to_render = 0;
+                        if (++current_pattern_index == patterns_active) {
+                            current_pattern_index = 0;
+                        }
+                        current_pattern = &patterns[current_pattern_index];
                     }
                 }
 
@@ -154,7 +158,8 @@ int main(int argc, char** argv) {
     populateNoiseTable();
     initializeChannels();
     patterns[0].active = true;
-    current_pattern = &patterns[0];
+    current_pattern_index = 0;
+    current_pattern = &patterns[current_pattern_index];
     patterns_active++;
 
     //SMB1 TEST
@@ -306,13 +311,21 @@ int main(int argc, char** argv) {
                 else if (event.key.scancode == SDL_SCANCODE_DOWN) {
                     if (editor_mode == PatternEditorMode::EDIT) {
                         editor_row++;
-                        if (editor_row >= current_pattern->row_count) editor_row = 0;
+                        if (editor_row >= current_pattern->row_count) {
+                            editor_row = 0;
+                            if (++current_pattern_index == patterns_active) current_pattern_index = 0;
+                            current_pattern = &patterns[current_pattern_index];
+                        }
                     }
                 }
                 else if (event.key.scancode == SDL_SCANCODE_UP) {
-                    if (editor_mode == PatternEditorMode::EDIT){
+                    if (editor_mode == PatternEditorMode::EDIT) {
                         editor_row--;
-                        if (editor_row < 0) editor_row = current_pattern->row_count-1;
+                        if (editor_row < 0) {
+                            editor_row = current_pattern->row_count - 1;
+                            if (--current_pattern_index<0) current_pattern_index = patterns_active-1;
+                            current_pattern = &patterns[current_pattern_index];
+                        }
                     }
                 }
                 else if (event.key.scancode == SDL_SCANCODE_LEFT) {
@@ -431,8 +444,14 @@ int main(int argc, char** argv) {
             char str[3];
             sprintf_s(str, "%.2d", i);
             TTF_SetTextString(text, str, 3);
-            if(patterns[i].active) TTF_SetTextColor(text, 255, 255, 255, 255);
-            else TTF_SetTextColor(text, 128, 128, 128, 255);
+            if (patterns[i].active) {
+                if(i==current_pattern_index) 
+                    TTF_SetTextColor(text, 0, 255, 0, 255);
+                else
+                    TTF_SetTextColor(text, 255, 255, 255, 255);
+            }
+            else 
+                TTF_SetTextColor(text, 128, 128, 128, 255);
             TTF_DrawRendererText(text, 784, i*8);
         }
 
