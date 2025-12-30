@@ -1,7 +1,7 @@
 #pragma once
 #include "Pattern.h"
 
-enum class PatternEditorMode {
+enum PatternEditorMode {
 	EDIT,
 	PLAY
 };

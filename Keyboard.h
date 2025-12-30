@@ -2,5 +2,5 @@
 #include <SDL3/SDL.h>
 
 int keyToNote(SDL_Scancode scancode);
-int keyToVolume(SDL_Scancode scancode);
+int keyToValue(SDL_Scancode scancode);
 int keyToInstrument(SDL_Scancode scancode);

@@ -25,6 +25,10 @@ enum Note {
 	B
 };
 
+enum Effect {
+	VOLUMESLIDE,
+};
+
 void populateNoiseTable();
 float noteToFrequency(int note);
 void initializeChannels();
