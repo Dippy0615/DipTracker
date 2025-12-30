@@ -1,6 +1,7 @@
 #pragma once
 #include "Constants.h"
 #include "RowData.h"
+#include "Audio.h"
 
 class Pattern
 {
@@ -18,6 +19,12 @@ public:
 	int getCellVolume(int row, int column);
 	void setCellInstrument(int row, int column, int instrument);
 	int getCellInstrument(int row, int column);
+	void setCellEffectType(int row, int column, EffectType effect_type);
+	EffectType getCellEffectType(int row, int column);
+	void setCellEffectOne(int row, int column, int value);
+	int getCellEffectOne(int row, int column);
+	void setCellEffectTwo(int row, int column, int value);
+	int getCellEffectTwo(int row, int column);
 	void freePattern();
 
 };

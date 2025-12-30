@@ -25,13 +25,14 @@ enum Note {
 	B
 };
 
-enum Effect {
+enum EffectType {
 	VOLUMESLIDE,
+	NONE = 31
 };
 
 void populateNoiseTable();
 float noteToFrequency(int note);
 void initializeChannels();
 const char* getNoteName(int note);
-const char* getEffectString(int effect);
+const char* getEffectTypeString(int effect);
 void resetPlaybackVariablesFull();

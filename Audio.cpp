@@ -56,11 +56,11 @@ const char* getNoteName(int note) {
     return base_string;
 }
 
-const char* getEffectString(int effect) {
+const char* getEffectTypeString(int effect) {
 
     switch(effect){
-        case 0: default: return "---"; break;
-
+        case EffectType::NONE: default: return "-";
+        case EffectType::VOLUMESLIDE: return "A";
     }
 }
 
