@@ -61,6 +61,7 @@ const char* getEffectTypeString(int effect) {
     switch(effect){
         case EffectType::NONE: default: return "-";
         case EffectType::VOLUMESLIDE: return "A";
+        case EffectType::SPEED: return "F";
     }
 }
 

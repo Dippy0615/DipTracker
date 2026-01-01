@@ -63,6 +63,10 @@ void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additional
                        if (osc->GetTargetVolume() > 1) osc->SetTargetVolume(1);
                    }
                }
+               if (effect_type == EffectType::SPEED) {
+                   int speed = (effect_two + (effect_one * 16));
+                   if (speed > 0) ticks_per_row = speed;
+               }
 
                float current_volume = osc->GetVolume();
                if(current_volume != osc->GetTargetVolume()){
@@ -108,7 +112,7 @@ void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additional
             if (sample_counter >= samples_per_tick) {
                 sample_counter -= samples_per_tick;
                 tick++;
-                if (tick == ticks_per_row) {
+                if (tick >= ticks_per_row) {
                     tick = 0;
                     row++;
                     //Reset flags
@@ -314,10 +318,12 @@ int main(int argc, char** argv) {
                     }
                 }
                 else if (editor_channel_column == PatternEditorChannelColumn::EFFECT1) {
-                    int value = keyToValue(event.key.scancode, true);
-                    switch (value) {
-                        case 10: //volume slide
+                    switch (event.key.scancode) {
+                        case SDL_SCANCODE_A: //volume slide
                             current_pattern->setCellEffectType(editor_row, editor_channel, EffectType::VOLUMESLIDE);
+                            break;
+                        case SDL_SCANCODE_F: //set speed
+                            current_pattern->setCellEffectType(editor_row, editor_channel, EffectType::SPEED);
                             break;
                     }
                 }
@@ -471,7 +477,7 @@ int main(int argc, char** argv) {
 
                 //--Effect 1--
                 char str3[6];
-                sprintf_s(str3, getEffectTypeString(cell & EFFECT_TYPE_MASK));
+                sprintf_s(str3, getEffectTypeString((cell & EFFECT_TYPE_MASK)>>20));
                 
                 //Highlight
                 if (same_row)

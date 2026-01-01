@@ -4,7 +4,7 @@
 #include "Audio.h"
 
 /*
-*           
+*                0001 0000 0000 0000 0000 0000
 * XXHG GGGF FFFE EEEE VVVV VVVI IIII INNN NNNN
 * 
 * First 7 bits are for the note (0-119 for notes, 127 for note off) [N]
