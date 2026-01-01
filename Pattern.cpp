@@ -4,7 +4,8 @@
 #include "Audio.h"
 
 /*
-* XHGG GGFF FFEE EEEV VVVV VVVI IIII INNN NNNN
+*           
+* XXHG GGGF FFFE EEEE VVVV VVVI IIII INNN NNNN
 * 
 * First 7 bits are for the note (0-119 for notes, 127 for note off) [N]
 * Next 6 bits are for the instrument (0-63) [I]
@@ -80,7 +81,7 @@ int Pattern::getCellEffectOne(int row, int column) {
 }
 void Pattern::setCellEffectTwo(int row, int column, int value) {
 	cells[row * MAX_CHANNELS + column] &= ~(EFFECT_TWO_MASK);
-	cells[row * MAX_CHANNELS + column] |= (value << 29);
+	cells[row * MAX_CHANNELS + column] |= ((long long)value << 29);
 }
 int Pattern::getCellEffectTwo(int row, int column) {
 	return (cells[row * MAX_CHANNELS + column] & EFFECT_TWO_MASK) >> 29;

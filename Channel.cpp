@@ -9,6 +9,7 @@ Channel::Channel() {
 	panning = DEFAULT_PANNING;
 	note = -1;
 	is_on = true;
+	has_set_volume_this_tick = false;
 }
 
 Channel::Channel(Oscillator osc) : my_oscillator(osc) {
@@ -16,6 +17,7 @@ Channel::Channel(Oscillator osc) : my_oscillator(osc) {
 	panning = DEFAULT_PANNING;
 	note = -1;
 	is_on = true;
+	has_set_volume_this_tick = false;
 }
 
 void Channel::PlayOscillator(float& sampleL, float& sampleR) {

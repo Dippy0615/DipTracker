@@ -14,6 +14,7 @@ Oscillator::Oscillator() {
 	volume = 1.0f;
 	volL = 1.0f;
 	volR = 1.0f;
+	target_volume = 1.0f;
 }
 
 Oscillator::Oscillator(OscillatorType type) : type(type) {
@@ -23,6 +24,7 @@ Oscillator::Oscillator(OscillatorType type) : type(type) {
 	volume = 1.0f;
 	volL = 1.0f;
 	volR = 1.0f;
+	target_volume = 1.0f;
 }
 
 void Oscillator::SetType(OscillatorType new_type) {
@@ -100,4 +102,11 @@ float Oscillator::GetLeftVolume() {
 }
 float Oscillator::GetRightVolume() {
 	return volR;
+}
+
+void Oscillator::SetTargetVolume(float vol) {
+	target_volume = vol;
+}
+float Oscillator::GetTargetVolume() {
+	return target_volume;
 }

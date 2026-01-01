@@ -60,14 +60,12 @@ int keyToValue(SDL_Scancode scancode, bool hex) {
 		case SDL_SCANCODE_7: return 7;
 		case SDL_SCANCODE_8: return 8;
 		case SDL_SCANCODE_9: return 9;
-		if (hex) {
-			case SDL_SCANCODE_A: return 10;
-			case SDL_SCANCODE_B: return 11;
-			case SDL_SCANCODE_C: return 12;
-			case SDL_SCANCODE_D: return 13;
-			case SDL_SCANCODE_E: return 14;
-			case SDL_SCANCODE_F: return 15;
-		}
+		case SDL_SCANCODE_A: if (hex) return 10;
+		case SDL_SCANCODE_B: if (hex) return 11;
+		case SDL_SCANCODE_C: if (hex) return 12;
+		case SDL_SCANCODE_D: if (hex) return 13;
+		case SDL_SCANCODE_E: if (hex) return 14;
+		case SDL_SCANCODE_F: if (hex) return 15;
 	}
 	return -1;
 }

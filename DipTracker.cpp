@@ -35,22 +35,49 @@ void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additional
             for (int i = 0; i < MAX_CHANNELS; i++) {
                float left = 0.0f;
                float right = 0.0f;
-                
+
                int note = current_pattern->getCellNote(row, i);
                int volume = current_pattern->getCellVolume(row, i);
                int instrument = current_pattern->getCellInstrument(row, i);
-               if (volume != VOLUME_BLANK && volume > -1) {
-                   //Volume smoothing
-                   float current = channels[i].my_oscillator.GetVolume();
-                   float target = (float)volume / MAX_VOLUME;
-                   float step = (target - current) * 0.009f;
-                   bool negative = signbit(step);
-                   current += step;
-                   if ((negative && current < target) || (!negative && current > target)) current = target;
-                   channels[i].my_oscillator.SetVolume(current);
+               int effect_type = current_pattern->getCellEffectType(row, i);
+               int effect_one = current_pattern->getCellEffectOne(row, i);
+               int effect_two = current_pattern->getCellEffectTwo(row, i);
+
+               Oscillator* osc = &channels[i].my_oscillator;
+
+               //Set the volume if not set already
+               if (volume != VOLUME_BLANK && volume > -1 && !channels[i].has_set_volume_this_tick) {
+                   osc->SetTargetVolume((float)volume / MAX_VOLUME);
+                   channels[i].has_set_volume_this_tick = true;
                }
+
+               //Implement effects
+               if (effect_type == EffectType::VOLUMESLIDE) {
+                   //Prioritizes fade out
+                   if (effect_two > 0) { //Fade out
+                       osc->SetTargetVolume(osc->GetTargetVolume() - ((float)effect_two / MAX_EFFECT_VALUE) * 0.00025f);
+                       if (osc->GetTargetVolume() < 0) osc->SetTargetVolume(0);
+                   }
+                   else if (effect_one > 0) { //Fade in
+                       osc->SetTargetVolume(osc->GetTargetVolume() + ((float)effect_one / MAX_EFFECT_VALUE) * 0.00025f);
+                       if (osc->GetTargetVolume() > 1) osc->SetTargetVolume(1);
+                   }
+               }
+
+               float current_volume = osc->GetVolume();
+               if(current_volume != osc->GetTargetVolume()){
+                   //Volume smoothing
+                   float tvol = osc->GetTargetVolume();
+                   float step = (tvol - current_volume) * 0.009f;
+                   bool negative = signbit(step);
+                   current_volume += step;
+                   if ((negative && current_volume < tvol) || (!negative && current_volume > tvol)) current_volume = tvol;
+                   osc->SetVolume(current_volume);
+               }
+                   
+               
                if (instrument!=INSTRUMENT_BLANK && instrument != (int)channels[i].my_oscillator.GetOscillatorType()) {
-                   channels[i].my_oscillator.SetOscillatorType((OscillatorType)instrument);
+                   osc->SetOscillatorType((OscillatorType)instrument);
                }
 
                if (note == NOTE_BLANK && channels[i].note == NOTE_BLANK) channels[i].note = NOTE_CUT;
@@ -77,12 +104,17 @@ void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additional
         sample_counter++;
 
         if(editor_mode==PatternEditorMode::PLAY){
+         
             if (sample_counter >= samples_per_tick) {
                 sample_counter -= samples_per_tick;
                 tick++;
                 if (tick == ticks_per_row) {
                     tick = 0;
                     row++;
+                    //Reset flags
+                    for (int i = 0; i < MAX_CHANNELS; i++) {
+                        channels[i].has_set_volume_this_tick = false;
+                    }
                     //if(row>pattern.row_count/2) first_row_to_render++;
                     if (row == current_pattern->row_count) {
                         row = 0;
@@ -257,7 +289,7 @@ int main(int argc, char** argv) {
                         long long cell = current_pattern->getCell(editor_row, editor_channel);
                         int volume = (cell & VOLUME_MASK)>>13;
                         if (volume == VOLUME_BLANK) volume = 0;
-                        int editing_second_digit = (cell & VOLUME_EDIT_MASK) >> 34;
+                        int editing_second_digit = (cell & VOLUME_EDIT_MASK) >> 33;
                         if (editing_second_digit==0) {
                             if(volume>0){
                                 volume /= 10;
@@ -283,7 +315,6 @@ int main(int argc, char** argv) {
                 }
                 else if (editor_channel_column == PatternEditorChannelColumn::EFFECT1) {
                     int value = keyToValue(event.key.scancode, true);
-                    //bool volume_blank = 
                     switch (value) {
                         case 10: //volume slide
                             current_pattern->setCellEffectType(editor_row, editor_channel, EffectType::VOLUMESLIDE);
@@ -438,7 +469,7 @@ int main(int argc, char** argv) {
                 TTF_SetTextColor(text, 255, 255, 255, 255);
 
                 //--Effect 1--
-                char str3[2];
+                char str3[6];
                 sprintf_s(str3, getEffectTypeString(cell & EFFECT_TYPE_MASK));
                 
                 //Highlight
@@ -450,7 +481,6 @@ int main(int argc, char** argv) {
                 TTF_SetTextString(text, str3, 2);
                 TTF_DrawRendererText(text, x+(56), (r * 8));
                 TTF_SetTextColor(text, 255, 255, 255, 255);
-
                 //--Effect 2--
                 sprintf_s(str3, "%x", current_pattern->getCellEffectOne(r, ch));
 

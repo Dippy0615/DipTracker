@@ -10,6 +10,7 @@ private:
 	float volume;
 	float volL;
 	float volR;
+	float target_volume;
 public:
 	Oscillator();
 	Oscillator(OscillatorType type);
@@ -24,4 +25,6 @@ public:
 	void SetStereo(float left, float right);
 	float GetLeftVolume();
 	float GetRightVolume();
+	void SetTargetVolume(float vol);
+	float GetTargetVolume();
 };

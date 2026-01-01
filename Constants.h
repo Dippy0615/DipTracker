@@ -13,6 +13,7 @@ constexpr int MAX_VOLPANEFFECT = 255;
 constexpr int MAX_VOLUME = 64;
 constexpr int MAX_PATTERNS = 99;
 constexpr int DEFAULT_PANNING = 128;
+constexpr int MAX_EFFECT_VALUE = 15;
 
 //Pattern Constants
 constexpr int NOTE_CUT = 127;
@@ -29,5 +30,5 @@ constexpr int EFFECT_TYPE_MASK = 0x1F00000;
 constexpr int EFFECT_ONE_MASK = 0x1E000000;
 constexpr long long EFFECT_TWO_MASK = 0x1E0000000;
 constexpr int EFFECT_MASK = 0xFFF80000;
-constexpr long long VOLUME_EDIT_MASK = 0x400000000;
+constexpr long long VOLUME_EDIT_MASK = 0x200000000;
 
