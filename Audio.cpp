@@ -71,5 +71,6 @@ void resetPlaybackVariablesFull() {
     is_editor_jamming = false;
     for (int i = 0; i < MAX_CHANNELS; i++) {
         channels[i].note = NOTE_BLANK;
+        channels[i].has_set_volume_this_tick = false;
     }
 }

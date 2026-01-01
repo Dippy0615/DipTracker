@@ -426,6 +426,7 @@ int main(int argc, char** argv) {
                 long long cell = current_pattern->getCell(r, ch);
                 int x = (ch * 80)+16;
                 bool same_row = editor_mode == PatternEditorMode::EDIT && r == editor_row;
+                bool beat_row = r % 4 == 0;
 
                 //--Note and octave--
                 TTF_Text* text = TTF_CreateText(text_engine, font, getNoteName(cell & NOTE_MASK), 6 * sizeof(char));
@@ -512,6 +513,11 @@ int main(int argc, char** argv) {
                 if (ch == 0) {
                     char str4[3];
                     sprintf_s(str4, "%.2d", r);
+
+                    if (beat_row)
+                        TTF_SetTextColor(text, 255, 255, 100, 255);
+                    else
+                        TTF_SetTextColor(text, 255, 255, 255, 255);
                     TTF_SetTextString(text, str4, 3 * sizeof(char));
                     TTF_DrawRendererText(text, x - 16, r * 8);
                 }
