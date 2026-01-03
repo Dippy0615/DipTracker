@@ -1,4 +1,5 @@
 #pragma once
+#include <SDL3_ttf/SDL_ttf.h>
 #include "Pattern.h"
 
 enum PatternEditorMode {
@@ -28,6 +29,8 @@ extern bool is_editor_jamming;
 extern int preview_channel;
 extern int preview_note;
 extern int preview_instrument;
+extern int first_row_to_render;
 void initializePatternEditor();
+void drawPattern(SDL_Renderer* renderer,TTF_TextEngine* text_engine, TTF_Font* font, int x);
 void playPattern();
 void stopPlaying();

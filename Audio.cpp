@@ -4,8 +4,10 @@
 #include "Oscillator.h"
 #include "OscillatorType.h"
 #include "Audio.h"
+#include "Pattern.h"
 #include "PatternEditor.h"
 
+Pattern patterns[MAX_PATTERNS];
 float noise_table[NOISE_TABLE_SIZE];
 Channel channels[MAX_CHANNELS];
 int sample_counter = 0;

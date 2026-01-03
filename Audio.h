@@ -2,7 +2,9 @@
 #include <SDL3/SDL.h>
 #include "Constants.h"
 #include "Channel.h"
+class Pattern;
 
+extern Pattern patterns[MAX_PATTERNS];
 extern float noise_table[NOISE_TABLE_SIZE];
 extern Channel channels[MAX_CHANNELS];
 extern int sample_counter;
