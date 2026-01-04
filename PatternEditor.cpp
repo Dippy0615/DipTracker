@@ -182,7 +182,7 @@ void deleteEffectType() {
     }
 }
 
-void drawPattern(SDL_Renderer* renderer, TTF_TextEngine* text_engine, TTF_Font* font, int x) {
+void drawPattern(SDL_Renderer* renderer, TTF_TextEngine* text_engine, TTF_Font* font, int x, int y) {
     //----Draw current pattern----
     for (int ch = 0; ch < MAX_CHANNELS; ch++) {
         for (int r = 0; r < current_pattern->row_count; r++) {
@@ -199,7 +199,7 @@ void drawPattern(SDL_Renderer* renderer, TTF_TextEngine* text_engine, TTF_Font* 
             if ((editor_mode == PatternEditorMode::PLAY && r == row) || (same_row && editor_channel == ch && editor_channel_column == PatternEditorChannelColumn::NOTE))
                 TTF_SetTextColor(text, 255, 0, 0, 255);
 
-            TTF_DrawRendererText(text, dx, (r * 8) - (first_row_to_render * 8));
+            TTF_DrawRendererText(text, dx, (r * 8) - (first_row_to_render * 8) + y);
             TTF_SetTextColor(text, 255, 255, 255, 255);
 
             //--Instrument--
@@ -214,7 +214,7 @@ void drawPattern(SDL_Renderer* renderer, TTF_TextEngine* text_engine, TTF_Font* 
                 TTF_SetTextColor(text, 255, 0, 0, 255);
 
             TTF_SetTextString(text, str, 3 * sizeof(char));
-            TTF_DrawRendererText(text, dx + (24), (r * 8) - (first_row_to_render * 8));
+            TTF_DrawRendererText(text, dx + (24), (r * 8) - (first_row_to_render * 8) + y);
             TTF_SetTextColor(text, 255, 255, 255, 255);
 
             //--Volume--
@@ -229,7 +229,7 @@ void drawPattern(SDL_Renderer* renderer, TTF_TextEngine* text_engine, TTF_Font* 
                 TTF_SetTextColor(text, 255, 0, 0, 255);
 
             TTF_SetTextString(text, str2, 3 * sizeof(char));
-            TTF_DrawRendererText(text, dx + (40), (r * 8) - (first_row_to_render * 8));
+            TTF_DrawRendererText(text, dx + (40), (r * 8) - (first_row_to_render * 8) + y);
             TTF_SetTextColor(text, 255, 255, 255, 255);
 
             //--Effect 1--
@@ -243,7 +243,7 @@ void drawPattern(SDL_Renderer* renderer, TTF_TextEngine* text_engine, TTF_Font* 
                 TTF_SetTextColor(text, 255, 0, 0, 255);
 
             TTF_SetTextString(text, str3, 2);
-            TTF_DrawRendererText(text, dx + (56), (r * 8));
+            TTF_DrawRendererText(text, dx + (56), (r * 8) + y);
             TTF_SetTextColor(text, 255, 255, 255, 255);
             //--Effect 2--
             sprintf_s(str3, "%x", current_pattern->getCellEffectOne(r, ch));
@@ -255,7 +255,7 @@ void drawPattern(SDL_Renderer* renderer, TTF_TextEngine* text_engine, TTF_Font* 
                 TTF_SetTextColor(text, 255, 0, 0, 255);
 
             TTF_SetTextString(text, str3, 2);
-            TTF_DrawRendererText(text, dx + (62), (r * 8));
+            TTF_DrawRendererText(text, dx + (62), (r * 8) + y);
             TTF_SetTextColor(text, 255, 255, 255, 255);
 
             //--Effect 3--
@@ -268,7 +268,7 @@ void drawPattern(SDL_Renderer* renderer, TTF_TextEngine* text_engine, TTF_Font* 
                 TTF_SetTextColor(text, 255, 0, 0, 255);
 
             TTF_SetTextString(text, str3, 2);
-            TTF_DrawRendererText(text, dx + (68), (r * 8));
+            TTF_DrawRendererText(text, dx + (68), (r * 8) + y);
             TTF_SetTextColor(text, 255, 255, 255, 255);
 
 
@@ -282,14 +282,14 @@ void drawPattern(SDL_Renderer* renderer, TTF_TextEngine* text_engine, TTF_Font* 
                 else
                     TTF_SetTextColor(text, 255, 255, 255, 255);
                 TTF_SetTextString(text, str4, 3 * sizeof(char));
-                TTF_DrawRendererText(text, dx - 16, r * 8);
+                TTF_DrawRendererText(text, dx - 16, (r * 8) + y);
             }
 
             TTF_DestroyText(text);
 
             //White divider line
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-            SDL_RenderLine(renderer, dx + (78), r * 8, dx + 78, (r * 8) + 8);
+            SDL_RenderLine(renderer, dx + (78), (r * 8) + y, dx + 78, (r * 8) + 8 + y);
         }
     }
 

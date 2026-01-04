@@ -45,4 +45,4 @@ void deleteNote();
 void deleteInstrument();
 void deleteVolume();
 void deleteEffectType();
-void drawPattern(SDL_Renderer* renderer,TTF_TextEngine* text_engine, TTF_Font* font, int x);
+void drawPattern(SDL_Renderer* renderer,TTF_TextEngine* text_engine, TTF_Font* font, int x, int y);

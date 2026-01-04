@@ -22,7 +22,9 @@ void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additional
     // Here you are expected to provide `additionalAmount` bytes of audio to the stream
     float* buffer = (float*)SDL_malloc(additionalAmount);
     int samples_to_go = additionalAmount / (sizeof(float) * 2);  // 2 channels
+
     processSamples(buffer, samples_to_go);
+
     SDL_PutAudioStreamData(stream, buffer, additionalAmount);
     SDL_free(buffer);
 }
@@ -80,32 +82,6 @@ int main(int argc, char** argv) {
     current_pattern_index = 0;
     current_pattern = &patterns[current_pattern_index];
     
-
-    //SMB1 TEST
-    //pattern = Pattern::Pattern();
-    /*
-    pattern.setCell(0, 0, 0b0011100); //28 (E)
-    pattern.setCell(1, 0, 0b0011100); //28 (E)
-    pattern.setCell(2, 0, 0b1111111); //127 (OFF)
-    pattern.setCell(3, 0, 0b0011100); //28 (E)
-    pattern.setCell(4, 0, 0b1111111); //127 (OFF)
-    pattern.setCell(5, 0, 0b0011000); //24 (C)
-    pattern.setCell(6, 0, 0b0011100); //28 (E)
-    pattern.setCell(7, 0, 0b1111111); //127 (OFF)
-    pattern.setCell(8, 0, 0b0011111); //31 (G)
-    pattern.setCell(12,0, 0b1111111); //127 (OFF)
-
-    pattern.setCell(0, 1, 0b1100); //12 (C)
-    pattern.setCell(1, 1, 0b1100); //12 (C)
-    pattern.setCell(2, 1, 0b1100); //12 (C)
-    pattern.setCell(3, 1, 0b1100); //12 (C)
-    pattern.setCell(4, 1, 0b1100); //12 (C)
-    pattern.setCell(5, 1, 0b1100); //12 (C)
-    pattern.setCell(6, 1, 0b1100); //12 (C)
-    pattern.setCell(7, 1, 0b1100); //12 (C)
-    pattern.setCell(8, 1, 0b10011); //19 (G)
-    pattern.setCell(12, 1, 0b1111111); //127 (OFF)
-    */
     SDL_ResumeAudioStreamDevice(audio_stream);
     
     while (running) {
@@ -199,7 +175,7 @@ int main(int argc, char** argv) {
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
-        drawPattern(renderer, text_engine, font, 16);
+        drawPattern(renderer, text_engine, font, 16, 0);
         SDL_RenderPresent(renderer);
     }
     cleanUp();
