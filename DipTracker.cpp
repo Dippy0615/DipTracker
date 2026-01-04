@@ -14,7 +14,6 @@
 float samples_per_tick = SAMPLE_RATE / 60.0f;
 int ticks_per_row = 6;
 bool running = true;
-int preview_time = 0;
 
 static SDL_Window* window = NULL;
 static SDL_Renderer* renderer = NULL;
@@ -254,28 +253,7 @@ int main(int argc, char** argv) {
             }
             if (event.type == SDL_EVENT_KEY_DOWN) {
                 if(editor_channel_column==PatternEditorChannelColumn::NOTE){
-                    //Note inputting
-                    int note = keyToNote(event.key.scancode);
-                    if (note > -1) {
-                        if (note != NOTE_BLANK && note != NOTE_CUT) {
-                            note = ((editor_octave * 12) + note);
-                            preview_note = note;
-                            preview_time = SAMPLE_RATE;
-                            is_editor_jamming = true;
-                            preview_channel = editor_channel;
-                            preview_instrument = current_pattern->getCellInstrument(editor_row, editor_channel);
-                            if (preview_instrument == INSTRUMENT_BLANK) {
-                                current_pattern->setCellInstrument(editor_row, editor_channel, 0);
-                                preview_instrument = 0;
-                            }
-                            if (current_pattern->getCellVolume(editor_row, editor_channel) == VOLUME_BLANK) {
-                                current_pattern->setCellVolume(editor_row, editor_channel, MAX_VOLUME);
-                            }
-                        }
-                        current_pattern->setCellNote(editor_row, editor_channel, note);
-                        
-                        row = editor_row;
-                    }
+                    inputNote(event.key.scancode);
                 }
                 else if (editor_channel_column == PatternEditorChannelColumn::INSTRUMENT) {
                     //Instrument inputting
@@ -285,45 +263,10 @@ int main(int argc, char** argv) {
                     }
                 }
                 else if (editor_channel_column == PatternEditorChannelColumn::VOLUME) {
-                    //Volume inputting
-                    int vol = keyToValue(event.key.scancode, false);
-                    if(vol>-1){
-                        long long cell = current_pattern->getCell(editor_row, editor_channel);
-                        int volume = (cell & VOLUME_MASK)>>13;
-                        if (volume == VOLUME_BLANK) volume = 0;
-                        int editing_second_digit = (cell & VOLUME_EDIT_MASK) >> 33;
-                        if (editing_second_digit==0) {
-                            if(volume>0){
-                                volume /= 10;
-                                volume *= 10;
-                            }
-                            volume += vol;
-                            if (volume > MAX_VOLUME) volume = MAX_VOLUME;
-                            cell &= ~(VOLUME_MASK);
-                            cell |= (volume << 13);
-                            cell |= (VOLUME_EDIT_MASK);
-                        }
-                        else {
-                            volume *= 10;
-                            volume %= 100;
-                            volume += vol;
-                            if (volume > MAX_VOLUME) volume = MAX_VOLUME;
-                            cell &= ~(VOLUME_MASK);
-                            cell |= (volume << 13);
-                            cell &= ~(VOLUME_EDIT_MASK);
-                        }
-                        current_pattern->setCell(editor_row, editor_channel, cell);
-                    }
+                    inputVolume(event.key.scancode);
                 }
                 else if (editor_channel_column == PatternEditorChannelColumn::EFFECT1) {
-                    switch (event.key.scancode) {
-                        case SDL_SCANCODE_A: //volume slide
-                            current_pattern->setCellEffectType(editor_row, editor_channel, EffectType::VOLUMESLIDE);
-                            break;
-                        case SDL_SCANCODE_F: //set speed
-                            current_pattern->setCellEffectType(editor_row, editor_channel, EffectType::SPEED);
-                            break;
-                    }
+                    inputEffectType(event.key.scancode);
                 }
                 else if (editor_channel_column == PatternEditorChannelColumn::EFFECT2) {
                     int value = keyToValue(event.key.scancode, true);
@@ -334,78 +277,24 @@ int main(int argc, char** argv) {
                     if (value > -1) current_pattern->setCellEffectTwo(editor_row, editor_channel, value);
                 }
                 if (event.key.scancode == SDL_SCANCODE_DELETE) {
-                    if(editor_channel_column==PatternEditorChannelColumn::NOTE){
-                        if (current_pattern->getCellNote(editor_row, editor_channel) != NOTE_BLANK) {
-                            if (current_pattern->getCellInstrument(editor_row, editor_channel) != INSTRUMENT_BLANK)
-                                current_pattern->setCellInstrument(editor_row, editor_channel, INSTRUMENT_BLANK);
-                            if (current_pattern->getCellVolume(editor_row, editor_channel) != VOLUME_BLANK)
-                                current_pattern->setCellVolume(editor_row, editor_channel, VOLUME_BLANK);
-                            current_pattern->setCellNote(editor_row, editor_channel, NOTE_BLANK);
-                            editor_row++;
-                            if (editor_row >= current_pattern->row_count) editor_row = 0;
-                        }
-                    }
-                    else if (editor_channel_column == PatternEditorChannelColumn::INSTRUMENT) {
-                        if (current_pattern->getCellInstrument(editor_row, editor_channel) != INSTRUMENT_BLANK){
-                            current_pattern->setCellInstrument(editor_row, editor_channel, INSTRUMENT_BLANK);
-                            editor_row++;
-                            if (editor_row >= current_pattern->row_count) editor_row = 0;
-                        }
-                    }
-                    else if (editor_channel_column == PatternEditorChannelColumn::VOLUME) {
-                        if (current_pattern->getCellVolume(editor_row, editor_channel) != VOLUME_BLANK) {
-                            current_pattern->setCellVolume(editor_row, editor_channel, VOLUME_BLANK);
-                            editor_row++;
-                            if (editor_row >= current_pattern->row_count) editor_row = 0;
-                        }
-                    }
-                    else if (editor_channel_column == PatternEditorChannelColumn::EFFECT1) {
-                        if (current_pattern->getCellEffectType(editor_row, editor_channel) != EffectType::NONE) {
-                            current_pattern->setCellEffectType(editor_row, editor_channel, EffectType::NONE);
-                            editor_row++;
-                            if (editor_row >= current_pattern->row_count) editor_row = 0;
-                        }
+                    switch (editor_channel_column) {
+                        case PatternEditorChannelColumn::NOTE: deleteNote(); break;
+                        case PatternEditorChannelColumn::INSTRUMENT: deleteInstrument(); break;
+                        case PatternEditorChannelColumn::VOLUME: deleteVolume(); break;
+                        case PatternEditorChannelColumn::EFFECT1: deleteEffectType(); break;
                     }
                 }
                 else if (event.key.scancode == SDL_SCANCODE_DOWN) {
-                    if (editor_mode == PatternEditorMode::EDIT) {
-                        editor_row++;
-                        if (editor_row >= current_pattern->row_count) {
-                            editor_row = 0;
-                            if (++current_pattern_index == patterns_active) current_pattern_index = 0;
-                            current_pattern = &patterns[current_pattern_index];
-                        }
-                    }
+                    moveDown();
                 }
                 else if (event.key.scancode == SDL_SCANCODE_UP) {
-                    if (editor_mode == PatternEditorMode::EDIT) {
-                        editor_row--;
-                        if (editor_row < 0) {
-                            editor_row = current_pattern->row_count - 1;
-                            if (--current_pattern_index<0) current_pattern_index = patterns_active-1;
-                            current_pattern = &patterns[current_pattern_index];
-                        }
-                    }
+                    moveUp();
                 }
                 else if (event.key.scancode == SDL_SCANCODE_LEFT) {
-                    if (editor_mode == PatternEditorMode::EDIT) {
-                        editor_channel_column--;
-                        if (editor_channel_column < 0) {
-                            editor_channel_column = PatternEditorChannelColumn::EFFECT3;
-                            editor_channel--;
-                            if (editor_channel < 0) editor_channel = MAX_CHANNELS-1;
-                        }
-                    }
+                    moveLeft();
                 }
                 else if (event.key.scancode == SDL_SCANCODE_RIGHT) {
-                    if (editor_mode == PatternEditorMode::EDIT) {
-                        editor_channel_column++;
-                        if(editor_channel_column>PatternEditorChannelColumn::EFFECT3){
-                            editor_channel_column = 0;
-                            editor_channel++;
-                            if (editor_channel >= MAX_CHANNELS) editor_channel = 0;
-                        }
-                    }
+                    moveRight();
                 }
                 else if (event.key.scancode == 84) { //Octave down (/)
                     editor_octave--;
