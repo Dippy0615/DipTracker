@@ -13,6 +13,8 @@ Channel channels[MAX_CHANNELS];
 int sample_counter = 0;
 int tick = 0;
 int row = 0;
+float samples_per_tick = SAMPLE_RATE / 60.0f;
+int ticks_per_row = 6;
 SDL_AudioStream* audio_stream = nullptr;
 
 void populateNoiseTable() {
@@ -75,5 +77,121 @@ void resetPlaybackVariablesFull() {
     for (int i = 0; i < MAX_CHANNELS; i++) {
         channels[i].note = NOTE_BLANK;
         channels[i].has_set_volume_this_tick = false;
+    }
+}
+
+void processSamples(float* buffer, int samples_to_go) {
+    for (int i = 0; i < samples_to_go; i++) {
+        float sampleL = 0;
+        float sampleR = 0;
+
+        if (editor_mode == PatternEditorMode::PLAY) {
+            for (int i = 0; i < MAX_CHANNELS; i++) {
+                float left = 0.0f;
+                float right = 0.0f;
+
+                int note = current_pattern->getCellNote(row, i);
+                int volume = current_pattern->getCellVolume(row, i);
+                int instrument = current_pattern->getCellInstrument(row, i);
+                int effect_type = current_pattern->getCellEffectType(row, i);
+                int effect_one = current_pattern->getCellEffectOne(row, i);
+                int effect_two = current_pattern->getCellEffectTwo(row, i);
+
+                Oscillator* osc = &channels[i].my_oscillator;
+
+                //Set the volume if not set already
+                if (volume != VOLUME_BLANK && volume > -1 && !channels[i].has_set_volume_this_tick) {
+                    osc->SetTargetVolume((float)volume / MAX_VOLUME);
+                    channels[i].has_set_volume_this_tick = true;
+                }
+
+                //Implement effects
+                if (effect_type == EffectType::VOLUMESLIDE) {
+                    //Prioritizes fade out
+                    if (effect_two > 0) { //Fade out
+                        osc->SetTargetVolume(osc->GetTargetVolume() - ((float)effect_two / MAX_EFFECT_VALUE) * 0.00025f);
+                        if (osc->GetTargetVolume() < 0) osc->SetTargetVolume(0);
+                    }
+                    else if (effect_one > 0) { //Fade in
+                        osc->SetTargetVolume(osc->GetTargetVolume() + ((float)effect_one / MAX_EFFECT_VALUE) * 0.00025f);
+                        if (osc->GetTargetVolume() > 1) osc->SetTargetVolume(1);
+                    }
+                }
+                if (effect_type == EffectType::SPEED) {
+                    int speed = (effect_two + (effect_one * 16));
+                    if (speed > 0) ticks_per_row = speed;
+                }
+
+                float current_volume = osc->GetVolume();
+                if (current_volume != osc->GetTargetVolume()) {
+                    //Volume smoothing
+                    float tvol = osc->GetTargetVolume();
+                    float step = (tvol - current_volume) * 0.009f;
+                    bool negative = signbit(step);
+                    current_volume += step;
+                    if ((negative && current_volume < tvol) || (!negative && current_volume > tvol)) current_volume = tvol;
+                    osc->SetVolume(current_volume);
+                }
+
+
+                if (instrument != INSTRUMENT_BLANK && instrument != (int)channels[i].my_oscillator.GetOscillatorType()) {
+                    osc->SetOscillatorType((OscillatorType)instrument);
+                }
+
+                if (note == NOTE_BLANK && channels[i].note == NOTE_BLANK) channels[i].note = NOTE_CUT;
+                if (note != NOTE_BLANK) channels[i].note = note;
+                if (channels[i].note != NOTE_CUT) channels[i].PlayOscillator(left, right);
+
+                sampleL += left;
+                sampleR += right;
+            }
+        }
+        else if (is_editor_jamming) {
+            float left = 0.0f;
+            float right = 0.0f;
+            channels[preview_channel].my_oscillator.SetVolume(1.0f);
+            channels[preview_channel].note = preview_note;
+            channels[preview_channel].my_oscillator.SetOscillatorType((OscillatorType)preview_instrument);
+            channels[preview_channel].PlayOscillator(left, right);
+            sampleL += left;
+            sampleR += right;
+        }
+        sampleL *= 0.5f;
+        sampleR *= 0.5f;
+
+        sample_counter++;
+
+        if (editor_mode == PatternEditorMode::PLAY) {
+
+            if (sample_counter >= samples_per_tick) {
+                sample_counter -= samples_per_tick;
+                tick++;
+                if (tick >= ticks_per_row) {
+                    tick = 0;
+                    row++;
+                    //Reset flags
+                    for (int i = 0; i < MAX_CHANNELS; i++) {
+                        channels[i].has_set_volume_this_tick = false;
+                    }
+                    //if(row>pattern.row_count/2) first_row_to_render++;
+                    if (row == current_pattern->row_count) {
+                        row = 0;
+                        first_row_to_render = 0;
+                        if (++current_pattern_index == patterns_active) {
+                            current_pattern_index = 0;
+                        }
+                        current_pattern = &patterns[current_pattern_index];
+                    }
+                }
+
+            }
+        }
+
+        if (--preview_time < 0) {
+            preview_time = 0;
+            is_editor_jamming = false;
+        }
+        buffer[i * 2 + 0] = sampleL; // Left
+        buffer[i * 2 + 1] = sampleR; // Right
     }
 }

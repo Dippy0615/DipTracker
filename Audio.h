@@ -10,6 +10,8 @@ extern Channel channels[MAX_CHANNELS];
 extern int sample_counter;
 extern int tick;
 extern int row;
+extern float samples_per_tick;
+extern int ticks_per_row;
 extern SDL_AudioStream* audio_stream;
 
 enum Note {
@@ -39,3 +41,4 @@ void initializeChannels();
 const char* getNoteName(int note);
 const char* getEffectTypeString(int effect);
 void resetPlaybackVariablesFull();
+void processSamples(float* buffer, int samples_to_go);
