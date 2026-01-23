@@ -6,10 +6,12 @@
 #include "Audio.h"
 #include "Pattern.h"
 #include "PatternEditor.h"
+#include "Instrument.h"
 
 Pattern patterns[MAX_PATTERNS];
 float noise_table[NOISE_TABLE_SIZE];
 Channel channels[MAX_CHANNELS];
+Instrument instruments[MAX_INSTRUMENTS];
 int sample_counter = 0;
 int tick = 0;
 int row = 0;
@@ -32,6 +34,14 @@ void initializeChannels() {
     for (int i = 0; i < MAX_CHANNELS; i++) {
         channels[i] = Channel::Channel(Oscillator::Oscillator(OscillatorType::Saw));
     }
+}
+
+void initializeInstruments() {
+    for (int i = 0; i < MAX_INSTRUMENTS; i++) {
+        char name[15];
+        instruments[i] = Instrument::Instrument("Instrument");
+    }
+    instruments[0].active = true;
 }
 
 const char* getNoteName(int note) {

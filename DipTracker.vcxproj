@@ -142,6 +142,8 @@
     <ClCompile Include="Audio.cpp" />
     <ClCompile Include="Channel.cpp" />
     <ClCompile Include="DipTracker.cpp" />
+    <ClCompile Include="Instrument.cpp" />
+    <ClCompile Include="InstrumentEditor.cpp" />
     <ClCompile Include="Keyboard.cpp" />
     <ClCompile Include="Oscillator.cpp" />
     <ClCompile Include="Pattern.cpp" />
@@ -151,6 +153,9 @@
     <ClInclude Include="Audio.h" />
     <ClInclude Include="Channel.h" />
     <ClInclude Include="Constants.h" />
+    <ClInclude Include="InstrumentEditor.h" />
+    <ClInclude Include="Screen.h" />
+    <ClInclude Include="Instrument.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Oscillator.h" />
     <ClInclude Include="OscillatorType.h" />

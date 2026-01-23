@@ -2,11 +2,13 @@
 #include <SDL3/SDL.h>
 #include "Constants.h"
 #include "Channel.h"
+#include "Instrument.h"
 class Pattern;
 
 extern Pattern patterns[MAX_PATTERNS];
 extern float noise_table[NOISE_TABLE_SIZE];
 extern Channel channels[MAX_CHANNELS];
+extern Instrument instruments[MAX_INSTRUMENTS];
 extern int sample_counter;
 extern int tick;
 extern int row;
@@ -38,6 +40,7 @@ enum EffectType {
 void populateNoiseTable();
 float noteToFrequency(int note);
 void initializeChannels();
+void initializeInstruments();
 const char* getNoteName(int note);
 const char* getEffectTypeString(int effect);
 void resetPlaybackVariablesFull();

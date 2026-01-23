@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL3_ttf/SDL_ttf.h>
 #include "Pattern.h"
+#include "Screen.h"
 
 enum PatternEditorMode {
 	EDIT,
@@ -45,4 +46,6 @@ void deleteNote();
 void deleteInstrument();
 void deleteVolume();
 void deleteEffectType();
+void handlePatternEditorKeyDown(SDL_Event& event);
+void handlePatternEdtiorMouseButtonDown(SDL_Event& event, Screen& current_screen);
 void drawPattern(SDL_Renderer* renderer,TTF_TextEngine* text_engine, TTF_Font* font, int x, int y);

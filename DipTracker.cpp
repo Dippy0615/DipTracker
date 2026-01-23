@@ -8,8 +8,11 @@
 #include "Channel.h"
 #include "Pattern.h"
 #include "Audio.h"
+#include "Instrument.h"
 #include "PatternEditor.h"
+#include "InstrumentEditor.h"
 #include "Keyboard.h"
+#include "Screen.h"
 
 bool running = true;
 
@@ -17,6 +20,8 @@ static SDL_Window* window = NULL;
 static SDL_Renderer* renderer = NULL;
 static TTF_Font* font = NULL;
 static TTF_TextEngine* text_engine = NULL;
+
+Screen current_screen = Screen::PATTERNEDITOR;
 
 void audioStreamCallback(void* userdata, SDL_AudioStream* stream, int additionalAmount, int totalAmount) {
     // Here you are expected to provide `additionalAmount` bytes of audio to the stream
@@ -76,6 +81,7 @@ int main(int argc, char** argv) {
 
     populateNoiseTable();
     initializeChannels();
+    initializeInstruments();
     patterns[0].active = true;
     patterns_active++;
 
@@ -98,84 +104,22 @@ int main(int argc, char** argv) {
                 SDL_MaximizeWindow(window);
             }
             if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
-                if (event.button.button == 1) {
-                    if (event.button.x >= 760 && event.button.x <= 768 && event.button.y>=0&&event.button.y<=8) {
-                        //Add a pattern
-                        patterns[patterns_active].active = true;
-                        patterns_active++;
-                    }
-                    if (event.button.x >= 768 && event.button.x <= 774 && event.button.y >= 0 && event.button.y <= 8) {
-                        //Remove a pattern
-                        if(patterns_active>1){
-                            patterns[patterns_active-1].active = false;
-                            patterns_active--;
-                        }
-                    }
+                if(current_screen == Screen::PATTERNEDITOR){
+                    handlePatternEdtiorMouseButtonDown(event, current_screen);
+                }
+                if (current_screen == Screen::INSTRUMENTEDITOR) {
+                    handleInstrumentEditorMouseButtonDown(event, current_screen);
                 }
             }
             if (event.type == SDL_EVENT_KEY_DOWN) {
-                if(editor_channel_column==PatternEditorChannelColumn::NOTE){
-                    inputNote(event.key.scancode);
-                }
-                else if (editor_channel_column == PatternEditorChannelColumn::INSTRUMENT) {
-                    //Instrument inputting
-                    int ins = keyToInstrument(event.key.scancode);
-                    if (ins > -1) {
-                        current_pattern->setCellInstrument(editor_row, editor_channel, ins);
-                    }
-                }
-                else if (editor_channel_column == PatternEditorChannelColumn::VOLUME) {
-                    inputVolume(event.key.scancode);
-                }
-                else if (editor_channel_column == PatternEditorChannelColumn::EFFECT1) {
-                    inputEffectType(event.key.scancode);
-                }
-                else if (editor_channel_column == PatternEditorChannelColumn::EFFECT2) {
-                    int value = keyToValue(event.key.scancode, true);
-                    if(value>-1) current_pattern->setCellEffectOne(editor_row, editor_channel, value);
-                }
-                else if (editor_channel_column == PatternEditorChannelColumn::EFFECT3) {
-                    int value = keyToValue(event.key.scancode, true);
-                    if (value > -1) current_pattern->setCellEffectTwo(editor_row, editor_channel, value);
-                }
-                if (event.key.scancode == SDL_SCANCODE_DELETE) {
-                    switch (editor_channel_column) {
-                        case PatternEditorChannelColumn::NOTE: deleteNote(); break;
-                        case PatternEditorChannelColumn::INSTRUMENT: deleteInstrument(); break;
-                        case PatternEditorChannelColumn::VOLUME: deleteVolume(); break;
-                        case PatternEditorChannelColumn::EFFECT1: deleteEffectType(); break;
-                    }
-                }
-                else if (event.key.scancode == SDL_SCANCODE_DOWN) {
-                    moveDown();
-                }
-                else if (event.key.scancode == SDL_SCANCODE_UP) {
-                    moveUp();
-                }
-                else if (event.key.scancode == SDL_SCANCODE_LEFT) {
-                    moveLeft();
-                }
-                else if (event.key.scancode == SDL_SCANCODE_RIGHT) {
-                    moveRight();
-                }
-                else if (event.key.scancode == 84) { //Octave down (/)
-                    editor_octave--;
-                    if (editor_octave < 0) editor_octave = 0;
-                }
-                else if (event.key.scancode == 85) { //Octave up (*)
-                    editor_octave++;
-                    if (editor_octave > 8) editor_octave = 8;
-                }
-                else if (event.key.scancode == SDL_SCANCODE_SPACE) {
-                    if (editor_mode == PatternEditorMode::EDIT) playPattern();
-                    else stopPlaying();
-                }
+                if(current_screen==Screen::PATTERNEDITOR) handlePatternEditorKeyDown(event);
             }
         }
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
-        drawPattern(renderer, text_engine, font, 16, 0);
+        if (current_screen == Screen::PATTERNEDITOR) drawPattern(renderer, text_engine, font, 16, 0);
+        if (current_screen == Screen::INSTRUMENTEDITOR) drawInstrumentEditor(renderer, text_engine, font);
         SDL_RenderPresent(renderer);
     }
     cleanUp();

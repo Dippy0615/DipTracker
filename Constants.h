@@ -14,6 +14,8 @@ constexpr int MAX_VOLUME = 64;
 constexpr int MAX_PATTERNS = 99;
 constexpr int DEFAULT_PANNING = 128;
 constexpr int MAX_EFFECT_VALUE = 15;
+constexpr int MAX_ENVELOPE_LENGTH = 255;
+constexpr int MAX_INSTRUMENTS = 255;
 
 //Pattern Constants
 constexpr int NOTE_CUT = 127;

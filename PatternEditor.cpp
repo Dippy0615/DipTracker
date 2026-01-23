@@ -5,6 +5,7 @@
 #include "Pattern.h"
 #include "PatternEditor.h"
 #include "Keyboard.h"
+#include "Screen.h"
 
 PatternEditorMode editor_mode = PatternEditorMode::EDIT;
 Pattern* current_pattern = nullptr;
@@ -181,6 +182,84 @@ void deleteEffectType() {
         if (editor_row >= current_pattern->row_count) editor_row = 0;
     }
 }
+void handlePatternEditorKeyDown(SDL_Event& event) {
+    if (editor_channel_column == PatternEditorChannelColumn::NOTE) {
+        inputNote(event.key.scancode);
+    }
+    else if (editor_channel_column == PatternEditorChannelColumn::INSTRUMENT) {
+        //Instrument inputting
+        int ins = keyToInstrument(event.key.scancode);
+        if (ins > -1) {
+            current_pattern->setCellInstrument(editor_row, editor_channel, ins);
+        }
+    }
+    else if (editor_channel_column == PatternEditorChannelColumn::VOLUME) {
+        inputVolume(event.key.scancode);
+    }
+    else if (editor_channel_column == PatternEditorChannelColumn::EFFECT1) {
+        inputEffectType(event.key.scancode);
+    }
+    else if (editor_channel_column == PatternEditorChannelColumn::EFFECT2) {
+        int value = keyToValue(event.key.scancode, true);
+        if (value > -1) current_pattern->setCellEffectOne(editor_row, editor_channel, value);
+    }
+    else if (editor_channel_column == PatternEditorChannelColumn::EFFECT3) {
+        int value = keyToValue(event.key.scancode, true);
+        if (value > -1) current_pattern->setCellEffectTwo(editor_row, editor_channel, value);
+    }
+    if (event.key.scancode == SDL_SCANCODE_DELETE) {
+        switch (editor_channel_column) {
+        case PatternEditorChannelColumn::NOTE: deleteNote(); break;
+        case PatternEditorChannelColumn::INSTRUMENT: deleteInstrument(); break;
+        case PatternEditorChannelColumn::VOLUME: deleteVolume(); break;
+        case PatternEditorChannelColumn::EFFECT1: deleteEffectType(); break;
+        }
+    }
+    else if (event.key.scancode == SDL_SCANCODE_DOWN) {
+        moveDown();
+    }
+    else if (event.key.scancode == SDL_SCANCODE_UP) {
+        moveUp();
+    }
+    else if (event.key.scancode == SDL_SCANCODE_LEFT) {
+        moveLeft();
+    }
+    else if (event.key.scancode == SDL_SCANCODE_RIGHT) {
+        moveRight();
+    }
+    else if (event.key.scancode == 84) { //Octave down (/)
+        editor_octave--;
+        if (editor_octave < 0) editor_octave = 0;
+    }
+    else if (event.key.scancode == 85) { //Octave up (*)
+        editor_octave++;
+        if (editor_octave > 8) editor_octave = 8;
+    }
+    else if (event.key.scancode == SDL_SCANCODE_SPACE) {
+        if (editor_mode == PatternEditorMode::EDIT) playPattern();
+        else stopPlaying();
+    }
+}
+
+void handlePatternEdtiorMouseButtonDown(SDL_Event& event, Screen& current_screen) {
+    if (event.button.button == 1) {
+        if (event.button.x >= 760 && event.button.x <= 768 && event.button.y >= 0 && event.button.y <= 8) {
+            //Add a pattern
+            patterns[patterns_active].active = true;
+            patterns_active++;
+        }
+        if (event.button.x >= 768 && event.button.x <= 774 && event.button.y >= 0 && event.button.y <= 8) {
+            //Remove a pattern
+            if (patterns_active > 1) {
+                patterns[patterns_active - 1].active = false;
+                patterns_active--;
+            }
+        }
+        if (event.button.x >= 670 && event.button.x <= 766 && event.button.y >= 0 && event.button.y <= 8) {
+            current_screen = Screen::INSTRUMENTEDITOR;
+        }
+    }
+}
 
 void drawPattern(SDL_Renderer* renderer, TTF_TextEngine* text_engine, TTF_Font* font, int x, int y) {
     //----Draw current pattern----
@@ -310,10 +389,15 @@ void drawPattern(SDL_Renderer* renderer, TTF_TextEngine* text_engine, TTF_Font* 
         TTF_DrawRendererText(text, 784, i * 8);
     }
 
+    //----TEMPORARY UI----
     //Add and remove a pattern (+ and -)
     TTF_SetTextColor(text, 255, 255, 255, 255);
     TTF_SetTextString(text, "+", 2);
     TTF_DrawRendererText(text, 760, 0);
     TTF_SetTextString(text, "-", 2);
     TTF_DrawRendererText(text, 768, 0);
+    
+    //Go to the instruments screen
+    TTF_SetTextString(text, "Instruments", 12);
+    TTF_DrawRendererText(text, 670, 0);
 }
