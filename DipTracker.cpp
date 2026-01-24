@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
                 SDL_MaximizeWindow(window);
             }
             if (event.type == SDL_EVENT_MOUSE_MOTION) {
-                SDL_Log("Mouse x: %f, Mouse y: %f", event.motion.x, event.motion.y);
+                //SDL_Log("Mouse x: %f, Mouse y: %f", event.motion.x, event.motion.y);
             }
             if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
                 if(current_screen == Screen::PATTERNEDITOR){

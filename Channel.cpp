@@ -9,7 +9,10 @@ Channel::Channel() {
 	panning = DEFAULT_PANNING;
 	note = -1;
 	is_on = true;
-	has_set_volume_this_tick = false;
+	has_set_volume_this_row = false;
+	has_set_continuous_tick_this_row = false;
+	has_set_envelope_this_tick = false;
+	continuous_tick = 0;
 }
 
 Channel::Channel(Oscillator osc) : my_oscillator(osc) {
@@ -17,7 +20,10 @@ Channel::Channel(Oscillator osc) : my_oscillator(osc) {
 	panning = DEFAULT_PANNING;
 	note = -1;
 	is_on = true;
-	has_set_volume_this_tick = false;
+	has_set_volume_this_row = false;
+	has_set_continuous_tick_this_row = false;
+	has_set_envelope_this_tick = false;
+	continuous_tick = 0;
 }
 
 void Channel::PlayOscillator(float& sampleL, float& sampleR) {

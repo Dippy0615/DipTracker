@@ -1,6 +1,7 @@
 #include <SDL3/SDL.h>
 #include <cmath>
 #include <iostream>
+#include <algorithm>
 #include "Oscillator.h"
 #include "OscillatorType.h"
 #include "Audio.h"
@@ -86,7 +87,10 @@ void resetPlaybackVariablesFull() {
     is_editor_jamming = false;
     for (int i = 0; i < MAX_CHANNELS; i++) {
         channels[i].note = NOTE_BLANK;
-        channels[i].has_set_volume_this_tick = false;
+        channels[i].has_set_volume_this_row = false;
+        channels[i].has_set_continuous_tick_this_row = false;
+        channels[i].has_set_envelope_this_tick = false;
+        channels[i].continuous_tick = 0;
     }
 }
 
@@ -108,11 +112,25 @@ void processSamples(float* buffer, int samples_to_go) {
                 int effect_two = current_pattern->getCellEffectTwo(row, i);
 
                 Oscillator* osc = &channels[i].my_oscillator;
+                Instrument* ins = &instruments[instrument];
 
                 //Set the volume if not set already
-                if (volume != VOLUME_BLANK && volume > -1 && !channels[i].has_set_volume_this_tick) {
+                if (volume != VOLUME_BLANK && volume > -1 && !channels[i].has_set_volume_this_row) {
                     osc->SetTargetVolume((float)volume / MAX_VOLUME);
-                    channels[i].has_set_volume_this_tick = true;
+                    channels[i].has_set_volume_this_row = true;
+                }
+
+                //Instrument
+                if (instrument != INSTRUMENT_BLANK) {
+                    osc->SetOscillatorType(ins->getOscillatorType());
+
+                    //Instrument's volume envelope
+                    int len = ins->getVolumeEnvelopeLength();
+                    if (len>0&&channels[i].continuous_tick<len&&!channels[i].has_set_envelope_this_tick) {
+                        float percentage = (float)ins->getVolumeEnvelopeValue(channels[i].continuous_tick) / (float)MAX_VOLUME;
+                        osc->SetTargetVolume(osc->GetTargetVolume() * percentage);
+                        channels[i].has_set_envelope_this_tick = true;
+                    }
                 }
 
                 //Implement effects
@@ -143,13 +161,14 @@ void processSamples(float* buffer, int samples_to_go) {
                     osc->SetVolume(current_volume);
                 }
 
-
-                if (instrument != INSTRUMENT_BLANK && instrument != (int)channels[i].my_oscillator.GetOscillatorType()) {
-                    osc->SetOscillatorType((OscillatorType)instrument);
-                }
-
                 if (note == NOTE_BLANK && channels[i].note == NOTE_BLANK) channels[i].note = NOTE_CUT;
-                if (note != NOTE_BLANK) channels[i].note = note;
+                if (note != NOTE_BLANK) {
+                    channels[i].note = note;
+                    if(!channels[i].has_set_continuous_tick_this_row){
+                        channels[i].continuous_tick = 0;
+                        channels[i].has_set_continuous_tick_this_row = true;
+                    }
+                }
                 if (channels[i].note != NOTE_CUT) channels[i].PlayOscillator(left, right);
 
                 sampleL += left;
@@ -161,7 +180,7 @@ void processSamples(float* buffer, int samples_to_go) {
             float right = 0.0f;
             channels[preview_channel].my_oscillator.SetVolume(1.0f);
             channels[preview_channel].note = preview_note;
-            channels[preview_channel].my_oscillator.SetOscillatorType((OscillatorType)preview_instrument);
+            channels[preview_channel].my_oscillator.SetOscillatorType(instruments[preview_instrument].getOscillatorType());
             channels[preview_channel].PlayOscillator(left, right);
             sampleL += left;
             sampleR += right;
@@ -176,13 +195,20 @@ void processSamples(float* buffer, int samples_to_go) {
             if (sample_counter >= samples_per_tick) {
                 sample_counter -= samples_per_tick;
                 tick++;
+                for (int i = 0; i < MAX_CHANNELS; i++) {
+                    channels[i].continuous_tick++;
+                    channels[i].has_set_envelope_this_tick = false;
+                }
+
                 if (tick >= ticks_per_row) {
                     tick = 0;
                     row++;
                     //Reset flags
                     for (int i = 0; i < MAX_CHANNELS; i++) {
-                        channels[i].has_set_volume_this_tick = false;
+                        channels[i].has_set_volume_this_row = false;
+                        channels[i].has_set_continuous_tick_this_row = false;
                     }
+
                     //if(row>pattern.row_count/2) first_row_to_render++;
                     if (row == current_pattern->row_count) {
                         row = 0;
