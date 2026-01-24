@@ -28,6 +28,14 @@ int Instrument::getVolumeEnvelopeLength() {
 	return volume_envelope_length;
 }
 
+void Instrument::setVolumeEnvelope(int index, int value) {
+	volume_envelope[index] = value;
+}
+
+int* Instrument::getVolumeEnvelope() {
+	return volume_envelope;
+}
+
 void Instrument::initializeEnvelope(int envelope[]) {
 	for (int i = 0; i < MAX_ENVELOPE_LENGTH; i++) {
 		envelope[i] = 0;

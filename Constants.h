@@ -33,4 +33,3 @@ constexpr int EFFECT_ONE_MASK = 0x1E000000;
 constexpr long long EFFECT_TWO_MASK = 0x1E0000000;
 constexpr int EFFECT_MASK = 0xFFF80000;
 constexpr long long VOLUME_EDIT_MASK = 0x200000000;
-

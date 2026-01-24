@@ -39,7 +39,11 @@ void cleanUp() {
     TTF_DestroyRendererTextEngine(text_engine);
     for(int i = 0; i < MAX_PATTERNS; i++)
         patterns[i].freePattern();
-    
+    SDL_DestroyTexture(sine_texture);
+    SDL_DestroyTexture(square_texture);
+    SDL_DestroyTexture(saw_texture);
+    SDL_DestroyTexture(tri_texture);
+    SDL_DestroyTexture(envelope_bar_texture);
     SDL_DestroyAudioStream(audio_stream);
 }
 
@@ -67,6 +71,28 @@ int main(int argc, char** argv) {
         SDL_Log("Couldn't create text engine: %s", SDL_GetError());
     }
 
+    //Load all textures
+    SDL_Surface* surface = SDL_LoadBMP("sine.bmp");
+    sine_texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_DestroySurface(surface);
+
+    surface = SDL_LoadBMP("square.bmp");
+    square_texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_DestroySurface(surface);
+
+    surface = SDL_LoadBMP("saw.bmp");
+    saw_texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_DestroySurface(surface);
+
+    surface = SDL_LoadBMP("tri.bmp");
+    tri_texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_DestroySurface(surface);
+
+    surface = SDL_LoadBMP("envelope bar.bmp");
+    envelope_bar_texture = SDL_CreateTextureFromSurface(renderer, surface);
+    if (envelope_bar_texture == NULL) SDL_Log("Failed to create texture: %s", SDL_GetError());
+    SDL_DestroySurface(surface);
+
     SDL_AudioSpec spec{};
     spec.format = SDL_AUDIO_F32;
     spec.channels = 2;
@@ -84,7 +110,7 @@ int main(int argc, char** argv) {
     initializeInstruments();
     patterns[0].active = true;
     patterns_active++;
-
+    
     current_pattern_index = 0;
     current_pattern = &patterns[current_pattern_index];
     
@@ -102,6 +128,9 @@ int main(int argc, char** argv) {
             }
             if (event.type == SDL_EVENT_WINDOW_MAXIMIZED) {
                 SDL_MaximizeWindow(window);
+            }
+            if (event.type == SDL_EVENT_MOUSE_MOTION) {
+                SDL_Log("Mouse x: %f, Mouse y: %f", event.motion.x, event.motion.y);
             }
             if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN) {
                 if(current_screen == Screen::PATTERNEDITOR){

@@ -11,6 +11,8 @@ public:
 	void setName(const char*);
 	void setVolumeEnvelopeLength(int length);
 	int getVolumeEnvelopeLength();
+	void setVolumeEnvelope(int index, int value);
+	int* getVolumeEnvelope();
 private:
 	const char* name;
 	int volume_envelope[MAX_ENVELOPE_LENGTH];
