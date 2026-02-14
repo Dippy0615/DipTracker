@@ -11,7 +11,7 @@ Oscillator::Oscillator() {
 	phase = 0.0f;
 	frequency = 0.0f;
 	noise_time = 0.0f;
-	volume = 1.0f;
+	volume = 0.0f;
 	volL = 1.0f;
 	volR = 1.0f;
 	target_volume = 1.0f;
@@ -21,7 +21,7 @@ Oscillator::Oscillator(OscillatorType type) : type(type) {
 	phase = 0.0f;
 	frequency = 0.0f;
 	noise_time = 0.0f;
-	volume = 1.0f;
+	volume = 0.0f;
 	volL = 1.0f;
 	volR = 1.0f;
 	target_volume = 1.0f;

@@ -13,6 +13,7 @@ Channel::Channel() {
 	has_set_continuous_tick_this_row = false;
 	has_set_envelope_this_tick = false;
 	continuous_tick = 0;
+	current_instrument = 0;
 }
 
 Channel::Channel(Oscillator osc) : my_oscillator(osc) {
@@ -24,6 +25,7 @@ Channel::Channel(Oscillator osc) : my_oscillator(osc) {
 	has_set_continuous_tick_this_row = false;
 	has_set_envelope_this_tick = false;
 	continuous_tick = 0;
+	current_instrument = 0;
 }
 
 void Channel::PlayOscillator(float& sampleL, float& sampleR) {

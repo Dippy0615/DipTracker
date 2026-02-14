@@ -86,6 +86,7 @@ void resetPlaybackVariablesFull() {
     row = 0;
     is_editor_jamming = false;
     for (int i = 0; i < MAX_CHANNELS; i++) {
+        channels[i].my_oscillator.SetVolume(0.0f);
         channels[i].note = NOTE_BLANK;
         channels[i].has_set_volume_this_row = false;
         channels[i].has_set_continuous_tick_this_row = false;
@@ -117,20 +118,24 @@ void processSamples(float* buffer, int samples_to_go) {
                 //Set the volume if not set already
                 if (volume != VOLUME_BLANK && volume > -1 && !channels[i].has_set_volume_this_row) {
                     osc->SetTargetVolume((float)volume / MAX_VOLUME);
+                    channels[i].volume = volume;
                     channels[i].has_set_volume_this_row = true;
                 }
 
                 //Instrument
                 if (instrument != INSTRUMENT_BLANK) {
+                    channels[i].current_instrument = instrument;
                     osc->SetOscillatorType(ins->getOscillatorType());
+                }
 
-                    //Instrument's volume envelope
-                    int len = ins->getVolumeEnvelopeLength();
-                    if (len>0&&channels[i].continuous_tick<len&&!channels[i].has_set_envelope_this_tick) {
-                        float percentage = (float)ins->getVolumeEnvelopeValue(channels[i].continuous_tick) / (float)MAX_VOLUME;
-                        osc->SetTargetVolume(osc->GetTargetVolume() * percentage);
-                        channels[i].has_set_envelope_this_tick = true;
-                    }
+                //Instrument's volume envelope
+                Instrument* channel_ins = &instruments[channels[i].current_instrument];
+                int len = channel_ins->getVolumeEnvelopeLength();
+                if (len > 0 && channels[i].continuous_tick < len && !channels[i].has_set_envelope_this_tick) {
+                    float percentage = (float)channel_ins->getVolumeEnvelopeValue(channels[i].continuous_tick) / (float)MAX_VOLUME;
+                    float channel_percentage = (float)(channels[i].volume) / (float)MAX_VOLUME;
+                    osc->SetTargetVolume(percentage * channel_percentage);
+                    channels[i].has_set_envelope_this_tick = true;
                 }
 
                 //Implement effects

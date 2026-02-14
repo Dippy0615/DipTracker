@@ -15,6 +15,7 @@ public:
 	bool has_set_continuous_tick_this_row;
 	bool has_set_envelope_this_tick;
 	int continuous_tick;
+	int current_instrument;
 	void PlayOscillator(float& sampleL, float& sampleR);
 };
 
