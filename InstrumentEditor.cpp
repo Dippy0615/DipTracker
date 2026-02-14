@@ -1,5 +1,6 @@
 #include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
+#include <iostream>
 #include "Audio.h"
 #include "InstrumentEditor.h"
 #include "Screen.h"
@@ -23,6 +24,14 @@ void handleInstrumentEditorMouseButtonDown(SDL_Event& event, Screen& current_scr
 	if (event.button.x >= 152 && event.button.x <= 160 && event.button.y >= 64 && event.button.y <= 72) {
 		if(instruments[current_instrument_index].getVolumeEnvelopeLength()>0)
 			instruments[current_instrument_index].setVolumeEnvelopeLength(instruments[current_instrument_index].getVolumeEnvelopeLength() - 1);
+	}
+	//Increase/Decrease instrument buttons
+	if (event.button.x >= 580 && event.button.x <= 588 && event.button.y >= 0 && event.button.y <= 8) {
+		current_instrument_index++;
+	}
+	if (event.button.x >= 588 && event.button.x <= 596 && event.button.y >= 0 && event.button.y <= 8) {
+		current_instrument_index--;
+		if (current_instrument_index < 0) current_instrument_index = 0;
 	}
 
 	//Envelope editor
@@ -71,6 +80,15 @@ void drawInstrumentEditor(SDL_Renderer* renderer, TTF_TextEngine* text_engine, T
 	Instrument* ins = &instruments[current_instrument_index];
 	TTF_SetTextString(text, ins->getName(), 20);
 	TTF_DrawRendererText(text, 400, 48);
+
+	//Increase/Decrease instrument
+	char t[9];
+	sprintf_s(t, "INS %.2d", current_instrument_index);
+	TTF_SetTextString(text, t, 9);
+	TTF_DrawRendererText(text, 534, 0);
+
+	TTF_SetTextString(text, "+-", 3);
+	TTF_DrawRendererText(text, 580, 0);
 
 	//Draw envelope
 	int len = ins->getVolumeEnvelopeLength();
