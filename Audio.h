@@ -34,6 +34,8 @@ enum Note {
 enum EffectType {
 	VOLUMESLIDE,
 	SPEED,
+	JUMP,
+	BREAKROW,
 	NONE = 31
 };
 

@@ -100,6 +100,12 @@ void inputEffectType(SDL_Scancode scancode) {
         case SDL_SCANCODE_A: //volume slide
             current_pattern->setCellEffectType(editor_row, editor_channel, EffectType::VOLUMESLIDE);
             break;
+        case SDL_SCANCODE_B:
+            current_pattern->setCellEffectType(editor_row, editor_channel, EffectType::JUMP);
+            break;
+        case SDL_SCANCODE_D:
+            current_pattern->setCellEffectType(editor_row, editor_channel, EffectType::BREAKROW);
+            break;
         case SDL_SCANCODE_F: //set speed
             current_pattern->setCellEffectType(editor_row, editor_channel, EffectType::SPEED);
             break;
@@ -255,7 +261,7 @@ void handlePatternEdtiorMouseButtonDown(SDL_Event& event, Screen& current_screen
                 patterns_active--;
             }
         }
-        if (event.button.x >= 670 && event.button.x <= 766 && event.button.y >= 0 && event.button.y <= 8) {
+        if (event.button.x >= 670 && event.button.x <= 758 && event.button.y >= 0 && event.button.y <= 8) {
             current_screen = Screen::INSTRUMENTEDITOR;
         }
     }

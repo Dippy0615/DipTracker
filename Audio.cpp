@@ -76,6 +76,8 @@ const char* getEffectTypeString(int effect) {
     switch(effect){
         case EffectType::NONE: default: return "-";
         case EffectType::VOLUMESLIDE: return "A";
+        case EffectType::JUMP: return "B";
+        case EffectType::BREAKROW: return "D";
         case EffectType::SPEED: return "F";
     }
 }
@@ -99,6 +101,8 @@ void processSamples(float* buffer, int samples_to_go) {
     for (int i = 0; i < samples_to_go; i++) {
         float sampleL = 0;
         float sampleR = 0;
+        int jump_to_pos = -1;
+        int break_to_row = -1;
 
         if (editor_mode == PatternEditorMode::PLAY) {
             for (int i = 0; i < MAX_CHANNELS; i++) {
@@ -139,20 +143,30 @@ void processSamples(float* buffer, int samples_to_go) {
                 }
 
                 //Implement effects
-                if (effect_type == EffectType::VOLUMESLIDE) {
-                    //Prioritizes fade out
-                    if (effect_two > 0) { //Fade out
-                        osc->SetTargetVolume(osc->GetTargetVolume() - ((float)effect_two / MAX_EFFECT_VALUE) * 0.00025f);
-                        if (osc->GetTargetVolume() < 0) osc->SetTargetVolume(0);
-                    }
-                    else if (effect_one > 0) { //Fade in
-                        osc->SetTargetVolume(osc->GetTargetVolume() + ((float)effect_one / MAX_EFFECT_VALUE) * 0.00025f);
-                        if (osc->GetTargetVolume() > 1) osc->SetTargetVolume(1);
-                    }
-                }
-                if (effect_type == EffectType::SPEED) {
-                    int speed = (effect_two + (effect_one * 16));
-                    if (speed > 0) ticks_per_row = speed;
+                switch(effect_type){
+                case EffectType::VOLUMESLIDE:{
+                            //Prioritizes fade out
+                            if (effect_two > 0) { //Fade out
+                                osc->SetTargetVolume(osc->GetTargetVolume() - ((float)effect_two / MAX_EFFECT_VALUE) * 0.00025f);
+                                if (osc->GetTargetVolume() < 0) osc->SetTargetVolume(0);
+                            }
+                            else if (effect_one > 0) { //Fade in
+                                osc->SetTargetVolume(osc->GetTargetVolume() + ((float)effect_one / MAX_EFFECT_VALUE) * 0.00025f);
+                                if (osc->GetTargetVolume() > 1) osc->SetTargetVolume(1);
+                            }
+                        }
+                        break;
+                    case EffectType::SPEED:{
+                            int speed = (effect_two + (effect_one * 16));
+                            if (speed > 0) ticks_per_row = speed;
+                        }
+                        break;
+                    case EffectType::JUMP:
+                        jump_to_pos = effect_two + (effect_one * 16);
+                        break;
+                    case EffectType::BREAKROW:
+                        break_to_row = effect_two + (effect_one * 16);
+                        break;
                 }
 
                 float current_volume = osc->GetVolume();
@@ -208,14 +222,37 @@ void processSamples(float* buffer, int samples_to_go) {
                 if (tick >= ticks_per_row) {
                     tick = 0;
                     row++;
+                    
                     //Reset flags
                     for (int i = 0; i < MAX_CHANNELS; i++) {
                         channels[i].has_set_volume_this_row = false;
                         channels[i].has_set_continuous_tick_this_row = false;
                     }
 
+                    if (jump_to_pos > -1) {
+                        if (jump_to_pos > patterns_active - 1)
+                            jump_to_pos = patterns_active - 1;
+
+                        row = 0;
+                        first_row_to_render = 0;
+                        current_pattern_index = jump_to_pos;
+                        current_pattern = &patterns[current_pattern_index];
+                    }
+                    
+                    if (break_to_row > -1) {
+                        row = break_to_row;
+                        if (row > 63) row = 0;
+                        first_row_to_render = 0;
+                        if (jump_to_pos == -1) {
+                            current_pattern_index++;
+                            if (current_pattern_index >= patterns_active)
+                                current_pattern_index = 0;
+                            current_pattern = &patterns[current_pattern_index];
+                        }
+                    }
+
                     //if(row>pattern.row_count/2) first_row_to_render++;
-                    if (row == current_pattern->row_count) {
+                    if (jump_to_pos == -1 && break_to_row == -1 && row == current_pattern->row_count) {
                         row = 0;
                         first_row_to_render = 0;
                         if (++current_pattern_index == patterns_active) {
@@ -223,6 +260,9 @@ void processSamples(float* buffer, int samples_to_go) {
                         }
                         current_pattern = &patterns[current_pattern_index];
                     }
+
+                    if(jump_to_pos>-1) jump_to_pos = -1;
+                    if(break_to_row>-1) break_to_row = -1;
                 }
 
             }
