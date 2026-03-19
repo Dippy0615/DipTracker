@@ -61,10 +61,9 @@ void Oscillator::Oscillate(float& sampleL, float& sampleR) {
 		noise_time += (51.0f/120) * 0.25f; //TO DO: replace first float w/ note var
 		if (noise_time >= NOISE_TABLE_SIZE) noise_time -= NOISE_TABLE_SIZE;
 	}
+
 	sampleL *= volume;
-	sampleR *= volume;
-	sampleL *= volL;
-	sampleR *= volR; 
+	sampleR *= volume; 
 	phase += frequency / SAMPLE_RATE;
 	if (phase >= 1.0f) phase -= 1.0;
 }

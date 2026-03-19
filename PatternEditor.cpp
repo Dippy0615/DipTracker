@@ -97,16 +97,19 @@ void inputVolume(SDL_Scancode scancode) {
 
 void inputEffectType(SDL_Scancode scancode) {
     switch (scancode) {
-        case SDL_SCANCODE_A: //volume slide
+        case SDL_SCANCODE_8:
+            current_pattern->setCellEffectType(editor_row, editor_channel, EffectType::PANNING);
+            break;
+        case SDL_SCANCODE_A: 
             current_pattern->setCellEffectType(editor_row, editor_channel, EffectType::VOLUMESLIDE);
             break;
-        case SDL_SCANCODE_B:
+        case SDL_SCANCODE_B: 
             current_pattern->setCellEffectType(editor_row, editor_channel, EffectType::JUMP);
             break;
         case SDL_SCANCODE_D:
             current_pattern->setCellEffectType(editor_row, editor_channel, EffectType::BREAKROW);
             break;
-        case SDL_SCANCODE_F: //set speed
+        case SDL_SCANCODE_F: 
             current_pattern->setCellEffectType(editor_row, editor_channel, EffectType::SPEED);
             break;
     }

@@ -36,6 +36,7 @@ enum EffectType {
 	SPEED,
 	JUMP,
 	BREAKROW,
+	PANNING,
 	NONE = 31
 };
 

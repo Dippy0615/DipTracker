@@ -37,6 +37,7 @@ void Channel::PlayOscillator(float& sampleL, float& sampleR) {
 	}
 
 	my_oscillator.SetFrequency(noteToFrequency(note));
-	//my_oscillator.SetVolume((float)(volume/MAX_VOLPANEFFECT));
 	my_oscillator.Oscillate(sampleL, sampleR);
+	if (panning > 128) sampleL *= 1.0f - ((float)(panning-128.0f) / 128.0f);
+	if (panning < 128) sampleR *= ((float)panning / 128.0f);
 }

@@ -78,6 +78,7 @@ const char* getEffectTypeString(int effect) {
         case EffectType::VOLUMESLIDE: return "A";
         case EffectType::JUMP: return "B";
         case EffectType::BREAKROW: return "D";
+        case EffectType::PANNING: return "8";
         case EffectType::SPEED: return "F";
     }
 }
@@ -94,6 +95,7 @@ void resetPlaybackVariablesFull() {
         channels[i].has_set_continuous_tick_this_row = false;
         channels[i].has_set_envelope_this_tick = false;
         channels[i].continuous_tick = 0;
+        channels[i].panning = DEFAULT_PANNING;
     }
 }
 
@@ -166,6 +168,9 @@ void processSamples(float* buffer, int samples_to_go) {
                         break;
                     case EffectType::BREAKROW:
                         break_to_row = effect_two + (effect_one * 16);
+                        break;
+                    case EffectType::PANNING:
+                        channels[i].panning = effect_two + (effect_one * 16);
                         break;
                 }
 
