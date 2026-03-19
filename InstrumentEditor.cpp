@@ -17,6 +17,29 @@ void handleInstrumentEditorMouseButtonDown(SDL_Event& event, Screen& current_scr
 	if (event.button.x >= 0 && event.button.x <= 120 && event.button.y >= 0 && event.button.y <= 8) {
 		current_screen = Screen::PATTERNEDITOR;
 	}
+
+	//Oscillator type buttons
+
+	//Sine
+	if (event.button.x >= 128 && event.button.x <= 192 && event.button.y >= 16 && event.button.y <= 48) {
+		instruments[current_instrument_index].setOscillatorType(OscillatorType::Sine);
+	}
+
+	//Square
+	if (event.button.x >= 224 && event.button.x <= 288 && event.button.y >= 16 && event.button.y <= 48) {
+		instruments[current_instrument_index].setOscillatorType(OscillatorType::Square);
+	}
+
+	//Saw
+	if (event.button.x >= 320 && event.button.x <= 384 && event.button.y >= 16 && event.button.y <= 48) {
+		instruments[current_instrument_index].setOscillatorType(OscillatorType::Saw);
+	}
+
+	//Tri
+	if (event.button.x >= 416 && event.button.x <= 480 && event.button.y >= 16 && event.button.y <= 48) {
+		instruments[current_instrument_index].setOscillatorType(OscillatorType::Tri);
+	}
+
 	//TEMPORARY UI: Increase/Decrease envelope length buttons
 	if (event.button.x >= 144 && event.button.x <= 151 && event.button.y >= 64 && event.button.y <= 72) {
 		instruments[current_instrument_index].setVolumeEnvelopeLength(instruments[current_instrument_index].getVolumeEnvelopeLength() + 1);
@@ -57,16 +80,37 @@ void drawInstrumentEditor(SDL_Renderer* renderer, TTF_TextEngine* text_engine, T
 	rect.y = 16;
 	rect.w = 64;
 	rect.h = 32;
-	SDL_SetTextureColorMod(sine_texture, 255, 0, 0);
+
+	Instrument* ins = &instruments[current_instrument_index];
+
+	if (ins->getOscillatorType() == OscillatorType::Sine)
+		SDL_SetTextureColorMod(sine_texture, 255, 0, 0);
+	else
+		SDL_SetTextureColorMod(sine_texture, 255, 255, 255);
 	SDL_RenderTexture(renderer, sine_texture, NULL, &rect);
+
 	rect.x += 96;
+	if (ins->getOscillatorType() == OscillatorType::Square)
+		SDL_SetTextureColorMod(square_texture, 255, 0, 0);
+	else
+		SDL_SetTextureColorMod(square_texture, 255, 255, 255);
 	SDL_RenderTexture(renderer, square_texture, NULL, &rect);
+
 	rect.x += 96;
+	if (ins->getOscillatorType() == OscillatorType::Saw)
+		SDL_SetTextureColorMod(saw_texture, 255, 0, 0);
+	else
+		SDL_SetTextureColorMod(saw_texture, 255, 255, 255);
 	SDL_RenderTexture(renderer, saw_texture, NULL, &rect);
+
 	rect.x += 96;
+	if (ins->getOscillatorType() == OscillatorType::Tri)
+		SDL_SetTextureColorMod(tri_texture, 255, 0, 0);
+	else
+		SDL_SetTextureColorMod(tri_texture, 255, 255, 255);
 	SDL_RenderTexture(renderer, tri_texture, NULL, &rect);
 
-	//Envelope types
+	
 	TTF_SetTextString(text, "Envelope Length:", 17);
 	TTF_DrawRendererText(text, 0, 64);
 
@@ -77,7 +121,6 @@ void drawInstrumentEditor(SDL_Renderer* renderer, TTF_TextEngine* text_engine, T
 	TTF_DrawRendererText(text, 152, 64);
 
 	//Instrument name
-	Instrument* ins = &instruments[current_instrument_index];
 	TTF_SetTextString(text, ins->getName(), 20);
 	TTF_DrawRendererText(text, 400, 48);
 
